@@ -1,0 +1,126 @@
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { io, Socket } from 'socket.io-client'
+import api from '../services/api'
+
+interface User {
+  id: number
+  username: string
+  email: string
+  avatar?: string
+  bio?: string
+  role: 'user' | 'moderator' | 'admin'
+  reputation: number
+  isVerified: boolean
+  isBanned: boolean
+  website?: string
+  location?: string
+  jobTitle?: string
+  githubUrl?: string
+  twitterUrl?: string
+  emailNotifications: boolean
+  lastLogin?: string
+  createdAt: string
+}
+
+interface AuthContextType {
+  user: User | null
+  loading: boolean
+  socket: Socket | null
+  login: (email: string, password: string) => Promise<void>
+  register: (username: string, email: string, password: string) => Promise<void>
+  logout: () => void
+  updateUser: (data: Partial<User>) => void
+  unreadCount: number
+  setUnreadCount: React.Dispatch<React.SetStateAction<number>>
+}
+
+const AuthContext = createContext<AuthContextType | null>(null)
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [socket, setSocket] = useState<Socket | null>(null)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken')
+    if (token) {
+      api.get('/auth/me')
+        .then(({ data }) => {
+          setUser(data.user)
+          initSocket(token)
+          fetchUnreadCount()
+        })
+        .catch(() => {
+          localStorage.removeItem('accessToken')
+          localStorage.removeItem('refreshToken')
+        })
+        .finally(() => setLoading(false))
+    } else {
+      setLoading(false)
+    }
+  }, [])
+
+  const fetchUnreadCount = async () => {
+    try {
+      const { data } = await api.get('/notifications?limit=1')
+      setUnreadCount(data.unreadCount || 0)
+    } catch {}
+  }
+
+  const initSocket = (token: string) => {
+    const newSocket = io('/', {
+      auth: { token },
+      transports: ['websocket', 'polling'],
+    })
+    newSocket.on('notification', (_notif) => {
+      setUnreadCount(prev => prev + 1)
+    })
+    newSocket.on('connect_error', (err) => {
+      console.warn('Socket error:', err.message)
+    })
+    setSocket(newSocket)
+  }
+
+  const login = async (email: string, password: string) => {
+    const { data } = await api.post('/auth/login', { email, password })
+    localStorage.setItem('accessToken', data.accessToken)
+    localStorage.setItem('refreshToken', data.refreshToken)
+    setUser(data.user)
+    initSocket(data.accessToken)
+    await fetchUnreadCount()
+  }
+
+  const register = async (username: string, email: string, password: string) => {
+    const { data } = await api.post('/auth/register', { username, email, password })
+    localStorage.setItem('accessToken', data.accessToken)
+    localStorage.setItem('refreshToken', data.refreshToken)
+    setUser(data.user)
+    initSocket(data.accessToken)
+  }
+
+  const logout = () => {
+    socket?.disconnect()
+    setSocket(null)
+    setUser(null)
+    setUnreadCount(0)
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+  }
+
+  const updateUser = (data: Partial<User>) => {
+    setUser(prev => prev ? { ...prev, ...data } : null)
+  }
+
+  return (
+    <AuthContext.Provider value={{ user, loading, socket, login, register, logout, updateUser, unreadCount, setUnreadCount }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export const useAuth = () => {
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
+  return ctx
+}
