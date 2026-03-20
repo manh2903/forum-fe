@@ -29,8 +29,8 @@ const FOOTER_LINKS = [
   {
     title: 'Về chúng tôi',
     links: [
-      { label: 'Điều khoản sử dụng', to: '/policy' },
-      { label: 'Chính sách bảo mật', to: '/policy' },
+      { label: 'Điều khoản sử dụng', to: '/policy/term-of-service' },
+      { label: 'Chính sách bảo mật', to: '/policy/privacy-policy' },
     ],
   },
 ]

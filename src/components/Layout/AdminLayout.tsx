@@ -8,7 +8,7 @@ import {
   Dashboard as DashboardIcon, People as PeopleIcon, Article as ArticleIcon,
   Report as ReportIcon, Topic as TopicIcon, History as HistoryIcon,
   ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon,
-  Home as HomeIcon, ViewCompact as BannerIcon
+  Home as HomeIcon, ViewCompact as BannerIcon, Settings as SettingsIcon
 } from '@mui/icons-material'
 import { useAuth } from '../../contexts/AuthContext'
 import { alpha } from '@mui/material/styles'
@@ -24,6 +24,7 @@ const navItems = [
   { label: 'Chủ đề', path: '/admin/topics', icon: <TopicIcon /> },
   { label: 'Banner', path: '/admin/banners', icon: <BannerIcon /> },
   { label: 'Audit Log', path: '/admin/audit-log', icon: <HistoryIcon /> },
+  { label: 'Cài đặt', path: '/admin/settings', icon: <SettingsIcon /> },
 ]
 
 export default function AdminLayout() {

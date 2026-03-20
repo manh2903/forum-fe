@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { Box } from '@mui/material'
 import { useAuth } from './contexts/AuthContext'
 import Layout from './components/Layout/Layout'
 import AdminLayout from './components/Layout/AdminLayout'
@@ -20,6 +19,7 @@ import TopicsPage from './pages/TopicsPage'
 import TagsPage from './pages/TagsPage'
 import BookmarksPage from './pages/BookmarksPage'
 import NotFoundPage from './pages/NotFoundPage'
+import PolicyPage from './pages/PolicyPage'
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -29,6 +29,7 @@ import AdminReports from './pages/admin/AdminReports'
 import AdminTopics from './pages/admin/AdminTopics'
 import AdminAuditLog from './pages/admin/AdminAuditLog'
 import AdminBanners from './pages/admin/AdminBanners'
+import AdminSettings from './pages/admin/AdminSettings'
 
 function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: string[] }) {
   const { user, loading } = useAuth()
@@ -62,6 +63,7 @@ export default function App() {
         <Route path="topics" element={<AdminTopics />} />
         <Route path="banners" element={<AdminBanners />} />
         <Route path="audit-log" element={<AdminAuditLog />} />
+        <Route path="settings" element={<AdminSettings />} />
       </Route>
 
       {/* Main routes */}
@@ -71,6 +73,7 @@ export default function App() {
         <Route path="/tags" element={<TagsPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/posts/:slug" element={<PostDetailPage />} />
+        <Route path="/policy/:key" element={<PolicyPage />} />
         <Route path="/profile/:username" element={<ProfilePage />} />
         <Route path="/create" element={<ProtectedRoute><CreatePostPage /></ProtectedRoute>} />
         <Route path="/edit/:id" element={<ProtectedRoute><EditPostPage /></ProtectedRoute>} />

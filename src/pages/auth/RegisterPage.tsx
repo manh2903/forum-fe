@@ -503,15 +503,17 @@ export default function RegisterPage() {
                 <Typography align="center" sx={{ mt: 1.5, fontSize: '12px', color: '#9CA3AF', lineHeight: 1.4 }}>
                   Bằng việc đăng ký, bạn đồng ý với các{' '}
                   <Box
-                    component="span"
-                    sx={{ color: '#6366F1', fontWeight: 600, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                    component={Link}
+                    to="/policy/term-of-service"
+                    sx={{ color: '#6366F1', fontWeight: 600, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                   >
                     Điều khoản dịch vụ
                   </Box>
                   {' '}và{' '}
                   <Box
-                    component="span"
-                    sx={{ color: '#6366F1', fontWeight: 600, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                    component={Link}
+                    to="/policy/privacy-policy"
+                    sx={{ color: '#6366F1', fontWeight: 600, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                   >
                     Chính sách bảo mật
                   </Box>
