@@ -314,9 +314,9 @@ export default function HomePage() {
                     <Box sx={{
                       width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      bgcolor: idx === 0 ? '#fbbf24' : idx === 1 ? '#94a3b8' : idx === 2 ? '#b45309' : alpha('#6366f1', 0.1),
+                      bgcolor: idx === 0 ? '#fbbf24' : idx === 1 ? '#94a3b8' : idx === 2 ? '#b45309' : alpha('#0c5d95', 0.1),
                       fontSize: '0.6rem', fontWeight: 800,
-                      color: idx < 3 ? 'white' : '#6366f1',
+                      color: idx < 3 ? 'white' : '#0c5d95',
                     }}>
                       {idx + 1}
                     </Box>
@@ -337,7 +337,7 @@ export default function HomePage() {
                       )}
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4, flexShrink: 0, mr: 1 }}>
-                      <ReputationIcon sx={{ fontSize: 13, color: '#6366f1' }} />
+                      <ReputationIcon sx={{ fontSize: 13, color: '#0c5d95' }} />
                       <Typography variant="caption" fontWeight={700} color="primary">
                         {author.reputation}
                       </Typography>
@@ -349,10 +349,12 @@ export default function HomePage() {
                         variant={author.isFollowing ? "outlined" : "contained"}
                         onClick={(e) => handleFollow(e, author.id, !!author.isFollowing)}
                         sx={{
-                          minWidth: 70,
-                          py: 0.2,
+                          minWidth: 85,
+                          width: 85,
+                          px: 0,
+                          py: 0.5,
                           fontSize: '0.65rem',
-                          borderRadius: 1,
+                          borderRadius: 1.5,
                           textTransform: 'none',
                           boxShadow: 'none',
                           transition: 'all 0.2s',
@@ -368,8 +370,8 @@ export default function HomePage() {
                                '& .unfollow-text': { display: 'inline' }
                             }
                           } : {
-                            bgcolor: '#6366f1',
-                            '&:hover': { bgcolor: '#4f46e5', boxShadow: 'none' }
+                            bgcolor: '#0c5d95',
+                            '&:hover': { bgcolor: '#094a76', boxShadow: 'none' }
                           })
                         }}
                       >
