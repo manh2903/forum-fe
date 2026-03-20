@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Chip, IconButton, TextField, InputAdornment,
+  TableHead, TableRow, Chip, IconButton, Button, TextField, InputAdornment,
   CircularProgress, Pagination, Tooltip, FormControl, Select, MenuItem
 } from '@mui/material'
-import { Search as SearchIcon, PushPin as PinIcon, Star as FeaturedIcon, Delete as DeleteIcon } from '@mui/icons-material'
+import { 
+  Search as SearchIcon, PushPin as PinIcon, Star as FeaturedIcon, 
+  Delete as DeleteIcon, AutoFixHigh as UpdateIcon 
+} from '@mui/icons-material'
 import { Link } from 'react-router-dom'
 import { alpha } from '@mui/material/styles'
 import api from '../../services/api'
@@ -20,6 +23,7 @@ export default function AdminPosts() {
   const [total, setTotal] = useState(0)
   const [topic, setTopic] = useState('')
   const [topics, setTopics] = useState<any[]>([])
+  const [updatingFeatured, setUpdatingFeatured] = useState(false)
 
   useEffect(() => { loadTopics() }, [])
   useEffect(() => { loadPosts() }, [page, search, topic])
@@ -60,10 +64,33 @@ export default function AdminPosts() {
     } catch { toast.error('Lỗi khi xóa') }
   }
 
+  const handleUpdateFeatured = async () => {
+    if (!confirm('Tính toán lại toàn bộ bài viết nổi bật dựa trên thuật toán?')) return
+    setUpdatingFeatured(true)
+    try {
+      const { data } = await api.post('/admin/posts/update-featured')
+      toast.success(data.message || 'Đã cập nhật bài nổi bật!')
+      loadPosts()
+    } catch {
+      toast.error('Lỗi khi cập nhật')
+    } finally {
+      setUpdatingFeatured(false)
+    }
+  }
+
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h5" fontWeight={700}>📄 Quản lý bài viết ({total})</Typography>
+        <Button 
+          variant="outlined" 
+          startIcon={updatingFeatured ? <CircularProgress size={16} /> : <UpdateIcon />} 
+          onClick={handleUpdateFeatured}
+          disabled={updatingFeatured}
+          sx={{ borderColor: '#e2e8f0', color: 'text.secondary' }}
+        >
+          {updatingFeatured ? 'Đang cập nhật...' : 'Cập nhật bài nổi bật'}
+        </Button>
       </Box>
 
       <Paper sx={{ p: 2, borderRadius: 3, border: '1px solid #e2e8f0', mb: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
