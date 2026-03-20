@@ -8,7 +8,8 @@ import {
 import { 
   Search as SearchIcon, PushPin as PinIcon, Star as FeaturedIcon, 
   Delete as DeleteIcon, AutoFixHigh as UpdateIcon,
-  Visibility as ShowIcon, VisibilityOff as HideIcon, Edit as EditIcon
+  Visibility as ShowIcon, VisibilityOff as HideIcon, Edit as EditIcon,
+  CheckCircle as ApproveIcon, Cancel as RejectIcon, Restore as RestoreIcon
 } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
 import { alpha } from '@mui/material/styles'
@@ -29,6 +30,7 @@ export default function AdminPosts() {
   const [updatingFeatured, setUpdatingFeatured] = useState(false)
   const [status, setStatus] = useState('')
   const [editPost, setEditPost] = useState<any>(null)
+  const [counts, setCounts] = useState<any>({})
 
   useEffect(() => { loadTopics() }, [])
   useEffect(() => { loadPosts() }, [page, search, topic, status])
@@ -47,6 +49,7 @@ export default function AdminPosts() {
       setPosts(data.posts)
       setTotalPages(data.totalPages)
       setTotal(data.total)
+      setCounts(data.counts || {})
     } finally { setLoading(false) }
   }
 
@@ -104,10 +107,78 @@ export default function AdminPosts() {
     }
   }
 
+  const handleApprove = async (post: any) => {
+    try {
+      await api.put(`/admin/posts/${post.id}/approve`)
+      toast.success('Đã phê duyệt bài viết')
+      await loadPosts()
+    } catch { toast.error('Lỗi khi phê duyệt') }
+  }
+
+  const handleReject = async (post: any) => {
+    const reason = prompt('Bạn muốn từ chối bài viết này? Nhập lý do (tùy chọn):')
+    if (reason === null) return // Canceled
+    try {
+      await api.put(`/admin/posts/${post.id}/reject`, { reason: reason })
+      toast.success('Đã từ chối bài viết')
+      await loadPosts()
+    } catch { toast.error('Lỗi khi từ chối') }
+  }
+
+  const handleRestore = async (post: any) => {
+    try {
+      await api.put(`/admin/posts/${post.id}/restore`)
+      toast.success('Đã khôi phục bài viết')
+      await loadPosts()
+    } catch { toast.error('Lỗi khi khôi phục') }
+  }
+
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>📄 Quản lý bài viết ({total})</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <Typography variant="h5" fontWeight={700}>📄 Quản lý bài viết</Typography>
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <Chip 
+              label={`Tổng: ${counts?.total || 0}`} 
+              size="small" 
+              sx={{ fontWeight: 600, bgcolor: '#f1f5f9', color: '#475569' }} 
+            />
+            <Chip 
+              label={`Chờ duyệt: ${counts?.pending || 0}`} 
+              size="small" 
+              color="warning" 
+              variant="outlined" 
+              sx={{ fontWeight: 600, bgcolor: alpha('#f59e0b', 0.05) }} 
+            />
+            <Chip 
+              label={`Đã đăng: ${counts?.published || 0}`} 
+              size="small" 
+              color="success" 
+              variant="outlined" 
+              sx={{ fontWeight: 600, bgcolor: alpha('#10b981', 0.05) }} 
+            />
+            <Chip 
+              label={`Bị từ chối: ${counts?.rejected || 0}`} 
+              size="small" 
+              color="error" 
+              variant="outlined" 
+              sx={{ fontWeight: 600, bgcolor: alpha('#ef4444', 0.05) }} 
+            />
+            <Chip 
+              label={`Đã xóa: ${counts?.deleted || 0}`} 
+              size="small" 
+              color="error" 
+              variant="filled" 
+              sx={{ fontWeight: 600 }} 
+            />
+            <Chip 
+              label={`Đã ẩn: ${counts?.archived || 0}`} 
+              size="small" 
+              sx={{ fontWeight: 600, bgcolor: '#f1f5f9', color: '#475569' }} 
+            />
+          </Box>
+        </Box>
         <Button 
           variant="outlined" 
           startIcon={updatingFeatured ? <CircularProgress size={16} /> : <UpdateIcon />} 
@@ -149,8 +220,11 @@ export default function AdminPosts() {
             sx={{ borderRadius: 2 }}
           >
             <MenuItem value="">Tất cả trạng thái</MenuItem>
+            <MenuItem value="pending">Chờ duyệt (Pending)</MenuItem>
             <MenuItem value="published">Đã đăng</MenuItem>
             <MenuItem value="archived">Đã ẩn</MenuItem>
+            <MenuItem value="rejected">Bị từ chối (Rejected)</MenuItem>
+            <MenuItem value="deleted">Đã xóa (Deleted)</MenuItem>
             <MenuItem value="draft">Bản nháp</MenuItem>
           </Select>
         </FormControl>
@@ -206,10 +280,21 @@ export default function AdminPosts() {
                 </TableCell>
                 <TableCell>
                   <Chip 
-                    label={post.status === 'published' ? 'Đã đăng' : post.status === 'archived' ? 'Đã ẩn' : 'Nháp'} 
+                    label={
+                      post.isDeleted ? 'Đã xóa' :
+                      post.status === 'published' ? 'Đã đăng' : 
+                      post.status === 'pending' ? 'Chờ duyệt' :
+                      post.status === 'rejected' ? 'Bị từ chối' :
+                      post.status === 'archived' ? 'Đã ẩn' : 'Nháp'
+                    } 
                     size="small" 
-                    color={post.status === 'published' ? 'success' : 'default'} 
-                    variant={post.status === 'published' ? 'outlined' : 'filled'}
+                    color={
+                      post.isDeleted ? 'error' :
+                      post.status === 'published' ? 'success' : 
+                      post.status === 'pending' ? 'warning' :
+                      post.status === 'rejected' ? 'error' : 'default'
+                    } 
+                    variant={(post.status === 'published' || post.status === 'pending') ? 'outlined' : 'filled'}
                     sx={{ height: 20, fontSize: '0.65rem' }} 
                   />
                 </TableCell>
@@ -218,31 +303,55 @@ export default function AdminPosts() {
                 </TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                    <Tooltip title="Sửa bài viết">
-                      <IconButton size="small" onClick={() => setEditPost({ ...post })} color="primary">
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={post.status === 'published' ? 'Ẩn bài viết' : 'Hiện bài viết'}>
-                      <IconButton size="small" onClick={() => handleToggleStatus(post)} sx={{ color: post.status === 'published' ? '#6b7280' : '#10b981' }}>
-                        {post.status === 'published' ? <HideIcon fontSize="small" /> : <ShowIcon fontSize="small" />}
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={post.isPinned ? 'Bỏ ghim' : 'Ghim'}>
-                      <IconButton size="small" onClick={() => togglePin(post)} sx={{ color: post.isPinned ? '#0c5d95' : 'text.secondary' }}>
-                        <PinIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={post.isFeatured ? 'Bỏ nổi bật' : 'Nổi bật'}>
-                      <IconButton size="small" onClick={() => toggleFeature(post)} sx={{ color: post.isFeatured ? '#f59e0b' : 'text.secondary' }}>
-                        <FeaturedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Xóa">
-                      <IconButton size="small" onClick={() => handleDelete(post)} sx={{ color: '#ef4444' }}>
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                    {post.isDeleted ? (
+                      <Tooltip title="Khôi phục bài viết">
+                        <IconButton size="small" onClick={() => handleRestore(post)} color="success">
+                          <RestoreIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    ) : (
+                      <>
+                        {post.status === 'pending' && (
+                          <Stack direction="row" spacing={0.5}>
+                            <Tooltip title="Phê duyệt">
+                              <IconButton size="small" onClick={() => handleApprove(post)} color="success">
+                                <ApproveIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Từ chối">
+                              <IconButton size="small" onClick={() => handleReject(post)} color="error">
+                                <RejectIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
+                        )}
+                        <Tooltip title="Sửa bài viết">
+                          <IconButton size="small" onClick={() => setEditPost({ ...post })} color="primary">
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={post.status === 'published' ? 'Ẩn bài viết' : 'Hiện bài viết'}>
+                          <IconButton size="small" onClick={() => handleToggleStatus(post)} sx={{ color: post.status === 'published' ? '#6b7280' : '#10b981' }}>
+                            {post.status === 'published' ? <HideIcon fontSize="small" /> : <ShowIcon fontSize="small" />}
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={post.isPinned ? 'Bỏ ghim' : 'Ghim'}>
+                          <IconButton size="small" onClick={() => togglePin(post)} sx={{ color: post.isPinned ? '#0c5d95' : 'text.secondary' }}>
+                            <PinIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={post.isFeatured ? 'Bỏ nổi bật' : 'Nổi bật'}>
+                          <IconButton size="small" onClick={() => toggleFeature(post)} sx={{ color: post.isFeatured ? '#f59e0b' : 'text.secondary' }}>
+                            <FeaturedIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Xóa">
+                          <IconButton size="small" onClick={() => handleDelete(post)} sx={{ color: '#ef4444' }}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </>
+                    )}
                   </Box>
                 </TableCell>
               </TableRow>
