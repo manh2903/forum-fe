@@ -79,7 +79,7 @@ export default function ProfilePage() {
   const isOwnProfile = currentUser?.id === profile.id
 
   return (
-    <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+    <Box>
       {/* Cover + Avatar */}
       <Box sx={{
         height: 200, borderRadius: 3, mb: -6,

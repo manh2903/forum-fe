@@ -71,7 +71,7 @@ export default function SearchPage() {
   const currentQuery = searchParams.get('q') || ''
 
   return (
-    <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+    <Box>
       <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>🔍 Tìm kiếm</Typography>
 
       {/* Search box */}
