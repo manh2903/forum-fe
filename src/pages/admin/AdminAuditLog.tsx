@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Avatar, Chip, CircularProgress, Pagination
+  TableHead, TableRow, Avatar, Chip, CircularProgress, Pagination,
+  FormControl, Select, MenuItem
 } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import api from '../../services/api'
 import dayjs from 'dayjs'
 
@@ -16,13 +18,14 @@ export default function AdminAuditLog() {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [action, setAction] = useState('')
 
-  useEffect(() => { loadLogs() }, [page])
+  useEffect(() => { loadLogs() }, [page, action])
 
   const loadLogs = async () => {
     setLoading(true)
     try {
-      const { data } = await api.get('/admin/audit-logs', { params: { page, limit: 20 } })
+      const { data } = await api.get('/admin/audit-logs', { params: { page, limit: 20, action } })
       setLogs(data.logs)
       setTotalPages(data.totalPages)
     } finally { setLoading(false) }
@@ -30,11 +33,26 @@ export default function AdminAuditLog() {
 
   return (
     <Box>
-      <Typography variant="h5" fontWeight={700} sx={{ mb: 3 }}>📋 Audit Log</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Typography variant="h5" fontWeight={700}>📋 Audit Log</Typography>
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <Select
+            value={action}
+            onChange={(e) => { setAction(e.target.value); setPage(1) }}
+            displayEmpty
+          >
+            <MenuItem value="">Tất cả hành động</MenuItem>
+            {Object.entries(ACTION_LABELS).map(([k, v]) => (
+              <MenuItem key={k} value={k}>{v}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
       <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0' }}>
         <Table>
           <TableHead>
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', bgcolor: '#f8fafc' } }}>
+              <TableCell sx={{ width: 60 }}>STT</TableCell>
               <TableCell>User</TableCell>
               <TableCell>Hành động / Endpoint</TableCell>
               <TableCell>Status</TableCell>
@@ -46,9 +64,10 @@ export default function AdminAuditLog() {
           </TableHead>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
-            ) : logs.map(log => (
-              <TableRow key={log.id} sx={{ '&:hover': { bgcolor: 'rgba(99,102,241,0.03)' } }}>
+              <TableRow><TableCell colSpan={9} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
+            ) : logs.map((log, idx) => (
+              <TableRow key={log.id} sx={{ '&:hover': { bgcolor: alpha('#0c5d95', 0.03) } }}>
+                <TableCell><Typography variant="caption" color="text.secondary">{(page - 1) * 20 + idx + 1}</Typography></TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Avatar src={log.user?.avatar} sx={{ width: 28, height: 28, fontSize: '0.7rem' }}>

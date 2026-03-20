@@ -7,13 +7,14 @@ import {
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
+import { alpha } from '@mui/material/styles'
 
 export default function AdminTopics() {
   const [categories, setCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [addCatOpen, setAddCatOpen] = useState(false)
   const [addTopicOpen, setAddTopicOpen] = useState(false)
-  const [catForm, setCatForm] = useState({ name: '', description: '', icon: '', color: '#6366f1' })
+  const [catForm, setCatForm] = useState({ name: '', description: '', icon: '', color: '#0c5d95' })
   const [topicForm, setTopicForm] = useState({ name: '', categoryId: '', description: '' })
   const [catEditingId, setCatEditingId] = useState<string | null>(null)
   const [topicEditingId, setTopicEditingId] = useState<string | null>(null)
@@ -38,7 +39,7 @@ export default function AdminTopics() {
         toast.success('Đã thêm danh mục!')
       }
       setAddCatOpen(false)
-      setCatForm({ name: '', description: '', icon: '', color: '#6366f1' })
+      setCatForm({ name: '', description: '', icon: '', color: '#0c5d95' })
       setCatEditingId(null)
       loadData()
     } catch (err: any) { toast.error(err.response?.data?.message || 'Lỗi') }
@@ -81,10 +82,10 @@ export default function AdminTopics() {
   const openAppCat = (cat?: any) => {
     if (cat) {
       setCatEditingId(cat.id)
-      setCatForm({ name: cat.name, description: cat.description || '', icon: cat.icon || '', color: cat.color || '#6366f1' })
+      setCatForm({ name: cat.name, description: cat.description || '', icon: cat.icon || '', color: cat.color || '#0c5d95' })
     } else {
       setCatEditingId(null)
-      setCatForm({ name: '', description: '', icon: '', color: '#6366f1' })
+      setCatForm({ name: '', description: '', icon: '', color: '#0c5d95' })
     }
     setAddCatOpen(true)
   }
@@ -120,7 +121,7 @@ export default function AdminTopics() {
         <Paper key={cat.id} sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-              <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: cat.color || '#6366f1' }} />
+              <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: cat.color || '#0c5d95' }} />
               <Typography variant="h6" fontWeight={700}>{cat.name}</Typography>
               {cat.description && <Typography variant="body2" color="text.secondary">— {cat.description}</Typography>}
             </Box>
@@ -147,7 +148,7 @@ export default function AdminTopics() {
                     </Box>
                     <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
                       <Chip label={`${topic.postCount} bài`} size="small" sx={{ height: 18, fontSize: '0.6rem' }} />
-                      <Chip label={`${topic.followerCount} follow`} size="small" sx={{ height: 18, fontSize: '0.6rem', bgcolor: '#6366f120', color: '#818cf8' }} />
+                      <Chip label={`${topic.followerCount} follow`} size="small" sx={{ height: 18, fontSize: '0.6rem', bgcolor: alpha('#0c5d95', 0.1), color: '#1d4ed8' }} />
                     </Box>
                   </CardContent>
                 </Card>

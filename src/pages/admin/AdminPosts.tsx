@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Chip, IconButton, Button, TextField, InputAdornment,
-  CircularProgress, Pagination, Link as MuiLink, Tooltip
+  TableHead, TableRow, Chip, IconButton, TextField, InputAdornment,
+  CircularProgress, Pagination, Tooltip, FormControl, Select, MenuItem
 } from '@mui/material'
 import { Search as SearchIcon, PushPin as PinIcon, Star as FeaturedIcon, Delete as DeleteIcon } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
+import { alpha } from '@mui/material/styles'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 import dayjs from 'dayjs'
@@ -17,13 +18,21 @@ export default function AdminPosts() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [topic, setTopic] = useState('')
+  const [topics, setTopics] = useState<any[]>([])
 
-  useEffect(() => { loadPosts() }, [page, search])
+  useEffect(() => { loadTopics() }, [])
+  useEffect(() => { loadPosts() }, [page, search, topic])
+
+  const loadTopics = async () => {
+    const { data } = await api.get('/topics')
+    setTopics(data.topics)
+  }
 
   const loadPosts = async () => {
     setLoading(true)
     try {
-      const { data } = await api.get('/posts', { params: { page, limit: 15, search, status: 'published' } })
+      const { data } = await api.get('/posts', { params: { page, limit: 15, search, status: 'published', topic } })
       setPosts(data.posts)
       setTotalPages(data.totalPages)
       setTotal(data.total)
@@ -57,7 +66,7 @@ export default function AdminPosts() {
         <Typography variant="h5" fontWeight={700}>📄 Quản lý bài viết ({total})</Typography>
       </Box>
 
-      <Paper sx={{ p: 2, borderRadius: 3, border: '1px solid #e2e8f0', mb: 2 }}>
+      <Paper sx={{ p: 2, borderRadius: 3, border: '1px solid #e2e8f0', mb: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
         <TextField
           placeholder="Tìm kiếm tiêu đề..."
           size="small"
@@ -66,12 +75,23 @@ export default function AdminPosts() {
           InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
           sx={{ minWidth: 300 }}
         />
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <Select
+            value={topic}
+            onChange={(e) => { setTopic(e.target.value); setPage(1) }}
+            displayEmpty
+          >
+            <MenuItem value="">Tất cả chủ đề</MenuItem>
+            {topics.map(t => <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>)}
+          </Select>
+        </FormControl>
       </Paper>
 
       <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0' }}>
         <Table>
           <TableHead>
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', bgcolor: '#f8fafc' } }}>
+              <TableCell sx={{ width: 60 }}>STT</TableCell>
               <TableCell>Tiêu đề</TableCell>
               <TableCell>Tác giả</TableCell>
               <TableCell>Tags</TableCell>
@@ -82,13 +102,14 @@ export default function AdminPosts() {
           </TableHead>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
-            ) : posts.map(post => (
+              <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
+            ) : posts.map((post, idx) => (
               <TableRow key={post.id} sx={{ '&:hover': { bgcolor: 'rgba(99,102,241,0.03)' } }}>
+                <TableCell><Typography variant="body2" color="text.secondary">{(page - 1) * 15 + idx + 1}</Typography></TableCell>
                 <TableCell sx={{ maxWidth: 300 }}>
                   <Box>
                     <Box sx={{ display: 'flex', gap: 0.5, mb: 0.5 }}>
-                      {post.isPinned && <Chip label="Ghim" size="small" sx={{ height: 16, fontSize: '0.6rem', bgcolor: '#6366f120', color: '#818cf8' }} />}
+                      {post.isPinned && <Chip label="Ghim" size="small" sx={{ height: 16, fontSize: '0.6rem', bgcolor: alpha('#0c5d95', 0.1), color: '#1d4ed8' }} />}
                       {post.isFeatured && <Chip label="Nổi bật" size="small" sx={{ height: 16, fontSize: '0.6rem', bgcolor: '#f59e0b20', color: '#fbbf24' }} />}
                     </Box>
                     <Typography variant="body2" fontWeight={600}
@@ -109,17 +130,17 @@ export default function AdminPosts() {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
                     👁 {post.viewCount} · ❤ {post.likeCount} · 💬 {post.commentCount}
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="caption" color="text.secondary">{dayjs(post.createdAt).format('DD/MM/YY')}</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>{dayjs(post.createdAt).format('DD/MM/YY')}</Typography>
                 </TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
                     <Tooltip title={post.isPinned ? 'Bỏ ghim' : 'Ghim'}>
-                      <IconButton size="small" onClick={() => togglePin(post)} sx={{ color: post.isPinned ? '#6366f1' : 'text.secondary' }}>
+                      <IconButton size="small" onClick={() => togglePin(post)} sx={{ color: post.isPinned ? '#0c5d95' : 'text.secondary' }}>
                         <PinIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>

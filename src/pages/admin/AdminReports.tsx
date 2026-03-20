@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Chip, IconButton, Button, Select, MenuItem,
-  FormControl, TextField, InputAdornment, CircularProgress, Dialog,
+  TableHead, TableRow, Chip, Button, Select, MenuItem,
+  FormControl, TextField, CircularProgress, Dialog,
   DialogTitle, DialogContent, DialogActions, Pagination, Avatar
 } from '@mui/material'
-import { Search as SearchIcon, CheckCircle, Cancel } from '@mui/icons-material'
+import { alpha } from '@mui/material/styles'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 import dayjs from 'dayjs'
@@ -17,7 +17,7 @@ const REASON_LABELS: Record<string, string> = {
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending: { label: 'Chờ xử lý', color: '#f59e0b' },
-  reviewing: { label: 'Đang xem xét', color: '#6366f1' },
+  reviewing: { label: 'Đang xem xét', color: '#0c5d95' },
   resolved: { label: 'Đã xử lý', color: '#10b981' },
   dismissed: { label: 'Bác bỏ', color: '#64748b' },
 }
@@ -72,6 +72,7 @@ export default function AdminReports() {
         <Table>
           <TableHead>
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', bgcolor: '#f8fafc' } }}>
+              <TableCell sx={{ width: 60 }}>STT</TableCell>
               <TableCell>Người báo cáo</TableCell>
               <TableCell>Loại nội dung</TableCell>
               <TableCell>Lý do</TableCell>
@@ -83,11 +84,12 @@ export default function AdminReports() {
           </TableHead>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
-            ) : reports.map(report => {
+              <TableRow><TableCell colSpan={8} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
+            ) : reports.map((report, idx) => {
               const sc = STATUS_CONFIG[report.status]
               return (
-                <TableRow key={report.id} sx={{ '&:hover': { bgcolor: 'rgba(99,102,241,0.03)' } }}>
+                <TableRow key={report.id} sx={{ '&:hover': { bgcolor: alpha('#0c5d95', 0.03) } }}>
+                  <TableCell><Typography variant="body2" color="text.secondary">{(page - 1) * 15 + idx + 1}</Typography></TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Avatar src={report.reporter?.avatar} sx={{ width: 28, height: 28, fontSize: '0.7rem' }}>

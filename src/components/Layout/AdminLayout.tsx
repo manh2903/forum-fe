@@ -50,20 +50,38 @@ export default function AdminLayout() {
         }}
       >
         {/* Header */}
-        <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5, height: 64, borderBottom: '1px solid #e2e8f0' }}>
-          <Box sx={{
-            minWidth: 36, width: 36, height: 36, borderRadius: '6px',
-            background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 800, color: 'white'
-          }}>T</Box>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: collapsed ? 'center' : 'space-between',
+          px: collapsed ? 0.5 : 2, 
+          height: 64, 
+          borderBottom: '1px solid #e2e8f0',
+          position: 'relative'
+        }}>
           {!collapsed && (
-            <Typography variant="body1" fontWeight={700} sx={{ color: 'text.primary', letterSpacing: '-0.01em' }}>
-              Admin Panel
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
+              <Box sx={{
+                minWidth: 32, width: 32, height: 32, borderRadius: '6px',
+                background: 'linear-gradient(135deg, #0c5d95 0%, #0ea5e9 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 800, color: 'white'
+              }}>T</Box>
+              <Typography variant="body1" fontWeight={700} sx={{ color: 'text.primary', letterSpacing: '-0.01em' }}>
+                Admin Panel
+              </Typography>
+            </Box>
           )}
-          <Box sx={{ flex: 1 }} />
-          <IconButton size="small" onClick={() => setCollapsed(!collapsed)} sx={{ color: 'text.secondary' }}>
-            {collapsed ? <ChevronRightIcon fontSize="small" /> : <ChevronLeftIcon fontSize="small" />}
+          
+          <IconButton 
+            size="small" 
+            onClick={() => setCollapsed(!collapsed)} 
+            sx={{ 
+              color: 'text.secondary',
+              bgcolor: collapsed ? alpha('#0c5d95', 0.05) : 'transparent',
+              '&:hover': { bgcolor: alpha('#0c5d95', 0.1) }
+            }}
+          >
+            {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </IconButton>
         </Box>
 
@@ -98,11 +116,11 @@ export default function AdminLayout() {
                 px: collapsed ? 1.5 : 2,
                 color: 'text.secondary',
                 '&.active': {
-                  color: 'primary.main',
-                  bgcolor: alpha('#6366f1', 0.1),
-                  '& .MuiListItemIcon-root': { color: 'primary.main' },
+                  color: '#0c5d95',
+                  bgcolor: alpha('#0c5d95', 0.1),
+                  '& .MuiListItemIcon-root': { color: '#0c5d95' },
                 },
-                '&:hover': { bgcolor: alpha('#6366f1', 0.08), color: 'text.primary' },
+                '&:hover': { bgcolor: alpha('#0c5d95', 0.08), color: 'text.primary' },
               }}
             >
               <Tooltip title={collapsed ? item.label : ''} placement="right">

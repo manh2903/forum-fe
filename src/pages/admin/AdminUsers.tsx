@@ -21,15 +21,17 @@ export default function AdminUsers() {
   const [banReason, setBanReason] = useState('')
   const [roleDialog, setRoleDialog] = useState<any>(null)
   const [newRole, setNewRole] = useState('')
+  const [role, setRole] = useState('')
+  const [status, setStatus] = useState('')
 
   useEffect(() => {
     loadUsers()
-  }, [page, search])
+  }, [page, search, role, status])
 
   const loadUsers = async () => {
     setLoading(true)
     try {
-      const { data } = await api.get('/admin/users', { params: { page, limit: 15, search } })
+      const { data } = await api.get('/admin/users', { params: { page, limit: 10, search, role, status } })
       setUsers(data.users)
       setTotal(data.total)
       setTotalPages(data.totalPages)
@@ -69,21 +71,45 @@ export default function AdminUsers() {
         <Typography variant="h5" fontWeight={700}>👥 Quản lý người dùng ({total})</Typography>
       </Box>
 
-      <Paper sx={{ p: 2, borderRadius: 3, border: '1px solid #e2e8f0', mb: 2 }}>
+      <Paper sx={{ p: 2, borderRadius: 3, border: '1px solid #e2e8f0', mb: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
         <TextField
           placeholder="Tìm kiếm username, email..."
           size="small"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
           InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
-          sx={{ minWidth: 300 }}
+          sx={{ minWidth: 260 }}
         />
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <Select
+            value={role}
+            onChange={(e) => { setRole(e.target.value); setPage(1) }}
+            displayEmpty
+          >
+            <MenuItem value="">Tất cả Role</MenuItem>
+            <MenuItem value="user">User</MenuItem>
+            <MenuItem value="moderator">Moderator</MenuItem>
+            <MenuItem value="admin">Admin</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <Select
+            value={status}
+            onChange={(e) => { setStatus(e.target.value); setPage(1) }}
+            displayEmpty
+          >
+            <MenuItem value="">Tất cả Trạng thái</MenuItem>
+            <MenuItem value="active">Active</MenuItem>
+            <MenuItem value="banned">Banned</MenuItem>
+          </Select>
+        </FormControl>
       </Paper>
 
       <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0' }}>
         <Table>
           <TableHead>
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', bgcolor: '#f8fafc' } }}>
+              <TableCell sx={{ width: 60 }}>STT</TableCell>
               <TableCell>Người dùng</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Role</TableCell>
@@ -95,9 +121,10 @@ export default function AdminUsers() {
           </TableHead>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
-            ) : users.map(user => (
+              <TableRow><TableCell colSpan={8} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
+            ) : users.map((user, idx) => (
               <TableRow key={user.id} sx={{ '&:hover': { bgcolor: 'rgba(99,102,241,0.03)' } }}>
+                <TableCell><Typography variant="body2" color="text.secondary">{(page - 1) * 15 + idx + 1}</Typography></TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Avatar src={user.avatar} sx={{ width: 36, height: 36, fontSize: '0.85rem' }}>{user.username[0]}</Avatar>
