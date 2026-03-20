@@ -14,7 +14,7 @@ dayjs.extend(relativeTime)
 dayjs.locale('vi')
 
 interface Tag { id: number; name: string; slug: string; color?: string }
-interface Author { id: number; username: string; avatar?: string; reputation: number; role: string }
+interface Author { id: number; username: string; fullName?: string; avatar?: string; reputation: number; role: string }
 interface Topic { id: number; name: string; slug: string }
 interface Post {
   id: number; title: string; slug: string; excerpt?: string; coverImage?: string
@@ -55,9 +55,9 @@ export default function PostCard({ post }: { post: Post }) {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
           <Box component={Link} to={`/profile/${post.author.username}`} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, textDecoration: 'none', '&:hover': { opacity: 0.8 } }}>
             <Avatar src={post.author.avatar} sx={{ width: 28, height: 28, fontSize: '0.75rem' }}>
-              {post.author.username[0].toUpperCase()}
+              {(post.author.fullName || post.author.username)[0].toUpperCase()}
             </Avatar>
-            <Typography variant="body2" fontWeight={600} color="text.primary">{post.author.username}</Typography>
+            <Typography variant="body2" fontWeight={600} color="text.primary">{post.author.fullName || post.author.username}</Typography>
           </Box>
           <Typography variant="body2" color="text.secondary">·</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>

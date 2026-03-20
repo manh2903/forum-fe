@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   Box, Typography, Paper, Grid, TextField, Button, Avatar,
-  Switch, FormControlLabel, Divider, Stack, CircularProgress, Alert, InputAdornment
+  Switch, FormControlLabel, Stack, CircularProgress, Alert, InputAdornment
 } from '@mui/material'
 import { Person as PersonIcon, Lock as LockIcon, Notifications as NotifIcon, Visibility, VisibilityOff } from '@mui/icons-material'
 import { useAuth } from '../contexts/AuthContext'
@@ -13,12 +13,15 @@ export default function SettingsPage() {
   const [tab, setTab] = useState<'profile' | 'security' | 'notifications'>('profile')
   const [loading, setLoading] = useState(false)
   const [profile, setProfile] = useState({
+    fullName: user?.fullName || '',
     bio: user?.bio || '',
     website: user?.website || '',
     location: user?.location || '',
     jobTitle: user?.jobTitle || '',
     githubUrl: user?.githubUrl || '',
     twitterUrl: user?.twitterUrl || '',
+    studentId: user?.studentId || '',
+    class: user?.class || '',
   })
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [showPass, setShowPass] = useState(false)
@@ -101,11 +104,15 @@ export default function SettingsPage() {
                   {user?.username?.[0]?.toUpperCase()}
                 </Avatar>
                 <Box>
-                  <Typography variant="h6" fontWeight={700}>@{user?.username}</Typography>
-                  <Typography variant="body2" color="text.secondary">{user?.email}</Typography>
+                  <Typography variant="h6" fontWeight={700}>{user?.fullName || user?.username}</Typography>
+                  <Typography variant="body2" color="text.secondary">@{user?.username} · {user?.email}</Typography>
                 </Box>
               </Box>
               <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField fullWidth label="Họ và tên" value={profile.fullName}
+                    onChange={(e) => setProfile({ ...profile, fullName: e.target.value })} />
+                </Grid>
                 <Grid size={12}>
                   <TextField fullWidth label="Giới thiệu" multiline rows={3} value={profile.bio}
                     onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
@@ -131,6 +138,14 @@ export default function SettingsPage() {
                   <TextField fullWidth label="Twitter URL" value={profile.twitterUrl}
                     onChange={(e) => setProfile({ ...profile, twitterUrl: e.target.value })} placeholder="https://twitter.com/..." />
                 </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField fullWidth label="Mã sinh viên (MSV)" value={profile.studentId}
+                    onChange={(e) => setProfile({ ...profile, studentId: e.target.value })} placeholder="VD: 20211234" />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField fullWidth label="Lớp" value={profile.class}
+                    onChange={(e) => setProfile({ ...profile, class: e.target.value })} placeholder="VD: CNTT1-K62" />
+                </Grid>
               </Grid>
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
                 <Button variant="contained" onClick={handleProfileSave} disabled={loading}>
@@ -143,7 +158,7 @@ export default function SettingsPage() {
           {tab === 'security' && (
             <Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0' }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>Đổi mật khẩu</Typography>
-              {!user?.password && (
+              {!user?.hasPassword && (
                 <Alert severity="info" sx={{ mb: 2 }}>
                   Tài khoản OAuth không thể đổi mật khẩu theo cách này
                 </Alert>
@@ -153,7 +168,7 @@ export default function SettingsPage() {
                   label="Mật khẩu hiện tại" type={showPass ? 'text' : 'password'}
                   value={passwords.currentPassword}
                   onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
-                  disabled={!user?.password}
+                  disabled={!user?.hasPassword}
                   InputProps={{
                     endAdornment: <InputAdornment position="end">
                       <Box component="span" onClick={() => setShowPass(!showPass)} sx={{ cursor: 'pointer', display: 'flex', color: 'text.secondary' }}>
@@ -164,14 +179,14 @@ export default function SettingsPage() {
                 />
                 <TextField label="Mật khẩu mới" type="password" value={passwords.newPassword}
                   onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
-                  disabled={!user?.password} helperText="Ít nhất 8 ký tự" />
+                  disabled={!user?.hasPassword} helperText="Ít nhất 8 ký tự" />
                 <TextField label="Xác nhận mật khẩu mới" type="password" value={passwords.confirmPassword}
                   onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
-                  disabled={!user?.password}
+                  disabled={!user?.hasPassword}
                   error={passwords.confirmPassword !== '' && passwords.newPassword !== passwords.confirmPassword} />
               </Stack>
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-                <Button variant="contained" onClick={handlePasswordChange} disabled={loading || !user?.password}>
+                <Button variant="contained" onClick={handlePasswordChange} disabled={loading || !user?.hasPassword}>
                   {loading ? <CircularProgress size={20} /> : 'Đổi mật khẩu'}
                 </Button>
               </Box>

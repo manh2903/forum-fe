@@ -7,7 +7,8 @@ import {
 import {
   Person as PersonIcon, Email as EmailIcon, Lock as LockIcon,
   Visibility, VisibilityOff, Code as CodeIcon,
-  Google as GoogleIcon, GitHub as GitHubIcon
+  Google as GoogleIcon, GitHub as GitHubIcon,
+  Badge as BadgeIcon, School as SchoolIcon
 } from '@mui/icons-material'
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
@@ -15,7 +16,7 @@ import toast from 'react-hot-toast'
 export default function RegisterPage() {
   const { register } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' })
+  const [form, setForm] = useState({ username: '', fullName: '', email: '', password: '', confirmPassword: '', studentId: '', class: '' })
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -28,7 +29,7 @@ export default function RegisterPage() {
     if (form.username.length < 3) return setError('Username phải có ít nhất 3 ký tự')
     setLoading(true)
     try {
-      await register(form.username, form.email, form.password)
+      await register(form.username, form.fullName, form.email, form.password, form.studentId, form.class)
       toast.success('Đăng ký thành công! Chào mừng bạn!')
       navigate('/')
     } catch (err: any) {
@@ -77,11 +78,17 @@ export default function RegisterPage() {
 
             <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <TextField
+                label="Họ và tên" fullWidth required
+                value={form.fullName}
+                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                InputProps={{ startAdornment: <InputAdornment position="start"><PersonIcon sx={{ color: 'text.secondary', fontSize: 20 }} /></InputAdornment> }}
+              />
+              <TextField
                 label="Username" fullWidth required
                 value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase().replace(/\s/g, '') })}
-                helperText="Chỉ chứa chữ, số và dấu gạch dưới"
-                InputProps={{ startAdornment: <InputAdornment position="start"><PersonIcon sx={{ color: 'text.secondary', fontSize: 20 }} /></InputAdornment> }}
+                helperText="Handle định danh (VD: nguyenvana)"
+                InputProps={{ startAdornment: <InputAdornment position="start"><CodeIcon sx={{ color: 'text.secondary', fontSize: 20 }} /></InputAdornment> }}
               />
               <TextField
                 label="Email" type="email" fullWidth required
@@ -115,6 +122,23 @@ export default function RegisterPage() {
                 helperText={form.confirmPassword !== '' && form.password !== form.confirmPassword ? 'Mật khẩu không khớp' : ''}
                 InputProps={{ startAdornment: <InputAdornment position="start"><LockIcon sx={{ color: 'text.secondary', fontSize: 20 }} /></InputAdornment> }}
               />
+
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                  label="Mã SV (nếu có)" fullWidth
+                  value={form.studentId}
+                  onChange={(e) => setForm({ ...form, studentId: e.target.value })}
+                  placeholder="2021..."
+                  InputProps={{ startAdornment: <InputAdornment position="start"><BadgeIcon sx={{ color: 'text.secondary', fontSize: 20 }} /></InputAdornment> }}
+                />
+                <TextField
+                  label="Lớp (nếu có)" fullWidth
+                  value={form.class}
+                  onChange={(e) => setForm({ ...form, class: e.target.value })}
+                  placeholder="CNTT..."
+                  InputProps={{ startAdornment: <InputAdornment position="start"><SchoolIcon sx={{ color: 'text.secondary', fontSize: 20 }} /></InputAdornment> }}
+                />
+              </Box>
               <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ py: 1.5, fontSize: '1rem', mt: 1 }}>
                 {loading ? <CircularProgress size={22} color="inherit" /> : 'Đăng ký'}
               </Button>

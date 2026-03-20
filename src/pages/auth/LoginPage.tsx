@@ -5,8 +5,9 @@ import {
   Divider, InputAdornment, IconButton, Alert, CircularProgress
 } from '@mui/material'
 import {
-  Email as EmailIcon, Lock as LockIcon, Visibility, VisibilityOff,
-  Google as GoogleIcon, GitHub as GitHubIcon, Code as CodeIcon
+  Lock as LockIcon, Visibility, VisibilityOff,
+  Google as GoogleIcon, GitHub as GitHubIcon, Code as CodeIcon,
+  Person as PersonIcon
 } from '@mui/icons-material'
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
@@ -14,7 +15,7 @@ import toast from 'react-hot-toast'
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '' })
+  const [form, setForm] = useState({ account: '', password: '' })
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -24,7 +25,7 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      await login(form.email, form.password)
+      await login(form.account, form.password)
       toast.success('Đăng nhập thành công!')
       navigate('/')
     } catch (err: any) {
@@ -91,10 +92,10 @@ export default function LoginPage() {
 
             <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <TextField
-                label="Email" type="email" fullWidth required
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                InputProps={{ startAdornment: <InputAdornment position="start"><EmailIcon sx={{ color: 'text.secondary', fontSize: 20 }} /></InputAdornment> }}
+                label="Username hoặc Email" fullWidth required
+                value={form.account}
+                onChange={(e) => setForm({ ...form, account: e.target.value })}
+                InputProps={{ startAdornment: <InputAdornment position="start"><PersonIcon sx={{ color: 'text.secondary', fontSize: 20 }} /></InputAdornment> }}
               />
               <TextField
                 label="Mật khẩu" fullWidth required

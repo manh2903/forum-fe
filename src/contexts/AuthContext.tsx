@@ -5,6 +5,7 @@ import api from '../services/api'
 interface User {
   id: number
   username: string
+  fullName?: string
   email: string
   avatar?: string
   bio?: string
@@ -17,6 +18,9 @@ interface User {
   jobTitle?: string
   githubUrl?: string
   twitterUrl?: string
+  studentId?: string
+  class?: string
+  hasPassword?: boolean
   emailNotifications: boolean
   lastLogin?: string
   createdAt: string
@@ -26,8 +30,8 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   socket: Socket | null
-  login: (email: string, password: string) => Promise<void>
-  register: (username: string, email: string, password: string) => Promise<void>
+  login: (account: string, password: string) => Promise<void>
+  register: (username: string, fullName: string, email: string, password: string, studentId?: string, className?: string) => Promise<void>
   logout: () => void
   updateUser: (data: Partial<User>) => void
   unreadCount: number
@@ -82,8 +86,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSocket(newSocket)
   }
 
-  const login = async (email: string, password: string) => {
-    const { data } = await api.post('/auth/login', { email, password })
+  const login = async (account: string, password: string) => {
+    const { data } = await api.post('/auth/login', { account, password })
     localStorage.setItem('accessToken', data.accessToken)
     localStorage.setItem('refreshToken', data.refreshToken)
     setUser(data.user)
@@ -91,8 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetchUnreadCount()
   }
 
-  const register = async (username: string, email: string, password: string) => {
-    const { data } = await api.post('/auth/register', { username, email, password })
+  const register = async (username: string, fullName: string, email: string, password: string, studentId?: string, className?: string) => {
+    const { data } = await api.post('/auth/register', { username, fullName, email, password, studentId, class: className })
     localStorage.setItem('accessToken', data.accessToken)
     localStorage.setItem('refreshToken', data.refreshToken)
     setUser(data.user)

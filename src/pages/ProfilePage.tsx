@@ -103,7 +103,7 @@ export default function ProfilePage() {
               background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
             }}
           >
-            {profile.username[0].toUpperCase()}
+            {(profile.fullName || profile.username)[0].toUpperCase()}
           </Avatar>
           <Box sx={{ display: 'flex', gap: 1 }}>
             {isOwnProfile ? (
@@ -122,7 +122,8 @@ export default function ProfilePage() {
           </Box>
         </Box>
 
-        <Typography variant="h4" fontWeight={800} sx={{ mb: 0.5 }}>{profile.username}</Typography>
+        <Typography variant="h4" fontWeight={800} sx={{ mb: 0.5 }}>{profile.fullName || profile.username}</Typography>
+        {profile.fullName && <Typography color="text.secondary" sx={{ mb: 0.5, fontWeight: 500 }}>@{profile.username}</Typography>}
         {profile.role !== 'user' && (
           <Chip label={profile.role} color="primary" size="small" sx={{ mb: 1 }} />
         )}
