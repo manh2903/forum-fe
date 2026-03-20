@@ -110,6 +110,28 @@ export default function HomePage() {
     } catch {}
   }
 
+  const handleFollow = async (e: React.MouseEvent, authorId: number, isFollowing: boolean) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+
+    try {
+      if (isFollowing) {
+        await api.delete(`/users/${authorId}/follow`)
+      } else {
+        await api.post(`/users/${authorId}/follow`)
+      }
+      setTopAuthors(prev => prev.map(a => 
+        a.id === authorId ? { ...a, isFollowing: !isFollowing } : a
+      ))
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   return (
     <Grid container spacing={3}>
       {/* Main content */}
@@ -314,12 +336,51 @@ export default function HomePage() {
                         </Typography>
                       )}
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4, flexShrink: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4, flexShrink: 0, mr: 1 }}>
                       <ReputationIcon sx={{ fontSize: 13, color: '#6366f1' }} />
                       <Typography variant="caption" fontWeight={700} color="primary">
                         {author.reputation}
                       </Typography>
                     </Box>
+
+                    {user?.id !== author.id && (
+                      <Button
+                        size="small"
+                        variant={author.isFollowing ? "outlined" : "contained"}
+                        onClick={(e) => handleFollow(e, author.id, !!author.isFollowing)}
+                        sx={{
+                          minWidth: 70,
+                          py: 0.2,
+                          fontSize: '0.65rem',
+                          borderRadius: 1,
+                          textTransform: 'none',
+                          boxShadow: 'none',
+                          transition: 'all 0.2s',
+                          ...(author.isFollowing ? {
+                            borderColor: '#e2e8f0',
+                            color: 'text.secondary',
+                            '& .unfollow-text': { display: 'none' },
+                            '&:hover': { 
+                               bgcolor: alpha('#ef4444', 0.08),
+                               borderColor: '#fca5a5',
+                               color: '#ef4444',
+                               '& .following-text': { display: 'none' },
+                               '& .unfollow-text': { display: 'inline' }
+                            }
+                          } : {
+                            bgcolor: '#6366f1',
+                            '&:hover': { bgcolor: '#4f46e5', boxShadow: 'none' }
+                          })
+                        }}
+                      >
+                        {author.isFollowing ? (
+                          <>
+                            <span className="following-text">Đã follow</span>
+                            <span className="unfollow-text">Bỏ follow</span>
+                          </>
+                        ) : 'Follow'}
+                      </Button>
+                    )}
                   </Box>
                 ))}
               </Stack>
