@@ -1,28 +1,40 @@
 import { useState, useEffect } from 'react'
 import {
-  Box, Typography, Paper, Grid, CircularProgress,
-  Card, CardContent, Avatar, Chip, LinearProgress
+  Box, Typography, Paper,  Grid, CircularProgress,
+  Card, CardContent, Avatar, Chip, LinearProgress, Stack, Divider,
+  Tooltip, IconButton, Button
 } from '@mui/material'
 import {
   People as PeopleIcon, Article as PostIcon,
-  Comment as CommentIcon, Flag as ReportIcon
+  Comment as CommentIcon, Flag as ReportIcon,
+  TrendingUp as TrendIcon, History as HistoryIcon,
+  LocalOffer as TagIcon, AdminPanelSettings as AdminIcon,
+  CheckCircle as CheckIcon, MoreVert as MoreIcon,
+  Error as ErrorIcon
 } from '@mui/icons-material'
-import { XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
+import { 
+  XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
+  ResponsiveContainer, Area, AreaChart, PieChart, Pie, Cell 
+} from 'recharts'
 import api from '../../services/api'
 import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 import { Link } from 'react-router-dom'
+import { alpha } from '@mui/material/styles'
+
+dayjs.extend(relativeTime)
 
 function StatCard({ title, value, sub, icon, color, change }: any) {
   return (
-    <Card sx={{ borderRadius: 1.5, border: '1px solid #e2e8f0', background: `linear-gradient(135deg, ${color}10 0%, transparent 70%)` }}>
-      <CardContent sx={{ p: 3 }}>
+    <Card sx={{ borderRadius: 3, border: '1px solid #eef2f6', background: `linear-gradient(135deg, ${color}08 0%, transparent 70%)`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+      <CardContent sx={{ p: 2.5 }}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>{title}</Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{title}</Typography>
             <Typography variant="h4" fontWeight={800}>{value?.toLocaleString()}</Typography>
-            {sub && <Typography variant="caption" color="text.secondary">{sub}</Typography>}
+            {sub && <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>{sub}</Typography>}
           </Box>
-          <Box sx={{ bgcolor: `${color}20`, borderRadius: 2, p: 1.5 }}>
+          <Box sx={{ bgcolor: alpha(color, 0.1), color: color, borderRadius: 2.5, p: 1.5, display: 'flex' }}>
             {icon}
           </Box>
         </Box>
@@ -31,7 +43,7 @@ function StatCard({ title, value, sub, icon, color, change }: any) {
             <Chip
               label={`+${change} tuần này`}
               size="small"
-              sx={{ bgcolor: '#10b98120', color: '#10b981', border: '1px solid #10b98140', height: 20, fontSize: '0.7rem', borderRadius: '6px' }}
+              sx={{ bgcolor: alpha('#10b981', 0.1), color: '#10b981', fontWeight: 700, height: 20, fontSize: '0.65rem' }}
             />
           </Box>
         )}
@@ -39,6 +51,8 @@ function StatCard({ title, value, sub, icon, color, change }: any) {
     </Card>
   )
 }
+
+const COLORS = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6'];
 
 export default function AdminDashboard() {
   const [analytics, setAnalytics] = useState<any>(null)
@@ -53,9 +67,8 @@ export default function AdminDashboard() {
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>
   if (!analytics) return null
 
-  const { overview, topPosts, topUsers, charts } = analytics
+  const { overview, topPosts, topUsers, charts, latestAuditLogs, topTags, roleDistribution } = analytics
 
-  // Merge chart data
   const chartData = (() => {
     const map = new Map()
     charts.userGrowth.forEach((d: any) => map.set(d.date, { date: dayjs(d.date).format('DD/MM'), users: parseInt(d.count) }))
@@ -66,129 +79,190 @@ export default function AdminDashboard() {
     return Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date))
   })()
 
+  const pieData = roleDistribution.map((r: any) => ({ name: r.role.toUpperCase(), value: parseInt(r.count) }))
+
   return (
     <Box>
-      <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>📊 Dashboard</Typography>
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h4" fontWeight={800}>🚀 Tổng quan Hệ thống</Typography>
+          <Typography variant="body2" color="text.secondary">Chào bạn quay trở lại. Đây là những gì đang diễn ra hôm nay.</Typography>
+        </Box>
+        <Chip label={dayjs().format('DD MMMM, YYYY')} variant="outlined" sx={{ fontWeight: 600, borderRadius: 2 }} />
+      </Box>
 
-      {/* Stat cards */}
-      <Grid container spacing={2.5} sx={{ mb: 3 }}>
+      {/* Primary Stats */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Tổng người dùng" value={overview.userCount}
-            sub={`${overview.newUsersWeek} mới tuần này`}
-            icon={<PeopleIcon sx={{ color: '#6366f1' }} />} color="#6366f1"
+          <StatCard title="Cộng đồng" value={overview.userCount}
+            sub={`${overview.newUsersWeek} thành viên mới`}
+            icon={<PeopleIcon />} color="#6366f1"
             change={overview.newUsersWeek} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Bài viết" value={overview.postCount}
-            sub={`${overview.newPostsWeek} mới tuần này`}
-            icon={<PostIcon sx={{ color: '#06b6d4' }} />} color="#06b6d4"
+          <StatCard title="Nội dung" value={overview.postCount}
+            sub={`${overview.newPostsWeek} bài viết mới`}
+            icon={<PostIcon />} color="#06b6d4"
             change={overview.newPostsWeek} />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Bình luận" value={overview.commentCount}
-            icon={<CommentIcon sx={{ color: '#10b981' }} />} color="#10b981" />
+          <StatCard title="Tương tác" value={overview.commentCount}
+            sub="Tổng số bình luận"
+            icon={<CommentIcon />} color="#10b981" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatCard title="Báo cáo chờ xử lý" value={overview.pendingReports}
-            icon={<ReportIcon sx={{ color: '#ef4444' }} />} color="#ef4444" />
+          <StatCard title="Kiểm duyệt" value={overview.pendingReports}
+            sub={`${overview.resolvedReports} đã xử lý`}
+            icon={<ReportIcon />} color="#ef4444" />
         </Grid>
       </Grid>
 
-      <Grid container spacing={2.5}>
-        {/* Growth chart */}
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Paper sx={{ p: 3, borderRadius: 1.5, border: '1px solid #e2e8f0' }}>
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>📈 Tăng trưởng 30 ngày qua</Typography>
-            {chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
+      <Grid container spacing={3}>
+        {/* Main Growth Chart */}
+        <Grid size={{ xs: 12, lg: 8 }}>
+          <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid #eef2f6', boxShadow: 'none' }}>
+            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6" fontWeight={800} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TrendIcon color="primary" /> Tăng trưởng Cộng đồng
+              </Typography>
+              <Stack direction="row" spacing={2}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#6366f1' }} />
+                  <Typography variant="caption" fontWeight={600}>Người dùng</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#06b6d4' }} />
+                  <Typography variant="caption" fontWeight={600}>Bài viết</Typography>
+                </Box>
+              </Stack>
+            </Box>
+            <Box sx={{ height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="userGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
                       <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="postGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.15} />
                       <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="date" stroke="#64748b" tick={{ fontSize: 11 }} />
-                  <YAxis stroke="#64748b" tick={{ fontSize: 11 }} />
-                  <RechartsTooltip contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 6, color: '#0f172a' }} />
-                  <Area type="monotone" dataKey="users" name="Người dùng mới" stroke="#6366f1" fill="url(#userGrad)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="posts" name="Bài viết mới" stroke="#06b6d4" fill="url(#postGrad)" strokeWidth={2} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                  <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }} />
+                  <Area type="monotone" dataKey="users" stroke="#6366f1" fill="url(#userGrad)" strokeWidth={3} />
+                  <Area type="monotone" dataKey="posts" stroke="#06b6d4" fill="url(#postGrad)" strokeWidth={3} />
                 </AreaChart>
               </ResponsiveContainer>
-            ) : (
-              <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>Chưa có dữ liệu</Box>
-            )}
-          </Paper>
-        </Grid>
-
-        {/* Top users */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Paper sx={{ p: 3, borderRadius: 1.5, border: '1px solid #e2e8f0', height: '100%' }}>
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>🏆 Top Users</Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              {topUsers.map((u: any, i: number) => (
-                <Box key={u.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ width: 16, textAlign: 'center', fontWeight: 700 }}>
-                    {i + 1}
-                  </Typography>
-                  <Avatar src={u.avatar} sx={{ width: 32, height: 32, fontSize: '0.75rem' }}>{u.username[0]}</Avatar>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" fontWeight={600}>{u.username}</Typography>
-                    <LinearProgress
-                      variant="determinate"
-                      value={(u.reputation / (topUsers[0]?.reputation || 1)) * 100}
-                      sx={{ height: 4, borderRadius: 2, bgcolor: '#e2e8f0', '& .MuiLinearProgress-bar': { bgcolor: '#6366f1' } }}
-                    />
-                  </Box>
-                  <Typography variant="caption" color="text.secondary">⭐{u.reputation}</Typography>
-                </Box>
-              ))}
             </Box>
           </Paper>
         </Grid>
 
-        {/* Top posts */}
-        <Grid size={12}>
-          <Paper sx={{ p: 3, borderRadius: 1.5, border: '1px solid #e2e8f0' }}>
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>🔥 Top Bài Viết</Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        {/* Role Distribution & Top Tags */}
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <Stack spacing={3} sx={{ height: '100%' }}>
+            <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid #eef2f6', boxShadow: 'none', flex: 1 }}>
+              <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>👥 Phân bổ Quyền hạn</Typography>
+              <Box sx={{ height: 160, display: 'flex', justifyContent: 'center' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={pieData} innerRadius={50} outerRadius={70} paddingAngle={5} dataKey="value">
+                      {pieData.map((entry: any, index: number) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Box>
+              <Stack spacing={1.5} sx={{ mt: 1 }}>
+                {roleDistribution.map((r: any, i: number) => (
+                  <Box key={r.role} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: COLORS[i % COLORS.length] }} />
+                      <Typography variant="body2" fontWeight={600} color="text.secondary">{r.role.toUpperCase()}</Typography>
+                    </Box>
+                    <Typography variant="body2" fontWeight={700}>{r.count}</Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Paper>
+
+            <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid #eef2f6', boxShadow: 'none' }}>
+              <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>#️⃣ Chủ đề Phổ biến</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {topTags.map((tag: any) => (
+                  <Chip key={tag.id} label={tag.name} size="small" variant="outlined" 
+                    sx={{ borderRadius: 1.5, borderColor: '#eef2f6', bgcolor: '#f8fafc', fontWeight: 600 }}
+                    avatar={<Avatar sx={{ bgcolor: alpha('#6366f1', 0.1), color: '#6366f1', fontSize: '0.6rem !important' }}>{tag.postCount}</Avatar>} />
+                ))}
+              </Box>
+            </Paper>
+          </Stack>
+        </Grid>
+
+        {/* Top Content */}
+        <Grid size={{ xs: 12, lg: 7 }}>
+          <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid #eef2f6', boxShadow: 'none' }}>
+            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6" fontWeight={800}>🔥 Bài viết Thịnh hành</Typography>
+              <Button size="small" component={Link} to="/admin/posts">Xem tất cả</Button>
+            </Box>
+            <Stack spacing={0}>
               {topPosts.map((post: any, i: number) => (
-                <Box key={post.id} sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1.5, borderBottom: '1px solid #ffffff', '&:last-child': { borderBottom: 'none' } }}>
-                  <Typography variant="h4" fontWeight={800} color="text.secondary" sx={{ width: 32, opacity: 0.4 }}>
-                    {i + 1}
-                  </Typography>
+                <Box key={post.id} sx={{ 
+                  display: 'flex', alignItems: 'center', gap: 2, py: 2, 
+                  borderBottom: i === topPosts.length - 1 ? 'none' : '1px solid #f1f5f9' 
+                }}>
+                  <Typography variant="h4" fontWeight={800} color="text.secondary" sx={{ opacity: 0.2, width: 40 }}>{i + 1}</Typography>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="body2" fontWeight={600} noWrap
-                      component={Link} to={`/posts/${post.slug}`}
-                      sx={{ color: 'text.primary', textDecoration: 'none', '&:hover': { color: 'primary.light' } }}>
+                    <Typography variant="body1" fontWeight={700} noWrap sx={{ display: 'block', mb: 0.5, color: 'inherit', textDecoration: 'none', '&:hover': { color: 'primary.main' } }} component={Link} to={`/posts/${post.slug}`}>
                       {post.title}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {dayjs(post.createdAt).format('DD/MM/YYYY')}
-                    </Typography>
+                    <Stack direction="row" spacing={2} color="text.secondary">
+                      <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>👀 {post.viewCount}</Typography>
+                      <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>❤️ {post.likeCount}</Typography>
+                      <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>💬 {post.commentCount}</Typography>
+                    </Stack>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="caption" color="primary.light" fontWeight={700}>{post.viewCount}</Typography>
-                      <Typography variant="caption" color="text.secondary" display="block">views</Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="caption" color="#ef4444" fontWeight={700}>{post.likeCount}</Typography>
-                      <Typography variant="caption" color="text.secondary" display="block">likes</Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="caption" color="#10b981" fontWeight={700}>{post.commentCount}</Typography>
-                      <Typography variant="caption" color="text.secondary" display="block">comments</Typography>
-                    </Box>
-                  </Box>
+                  <Chip label="Popular" size="small" sx={{ bgcolor: alpha('#f59e0b', 0.1), color: '#f59e0b', fontWeight: 800, fontSize: '0.65rem' }} />
                 </Box>
               ))}
+            </Stack>
+          </Paper>
+        </Grid>
+
+        {/* Audit Logs / Activity */}
+        <Grid size={{ xs: 12, lg: 5 }}>
+          <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid #eef2f6', boxShadow: 'none', height: '100%' }}>
+            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6" fontWeight={800} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <HistoryIcon sx={{ color: '#6366f1' }} /> Hoạt động Quản trị
+              </Typography>
+              <IconButton size="small" component={Link} to="/admin/audit-log"><MoreIcon /></IconButton>
             </Box>
+            <Stack spacing={3}>
+              {latestAuditLogs.map((log: any) => (
+                <Box key={log.id} sx={{ display: 'flex', gap: 2 }}>
+                  <Avatar src={log.user?.avatar} sx={{ width: 32, height: 32 }}>{log.user?.username?.[0]}</Avatar>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {log.user?.username} <Typography variant="caption" color="text.secondary" fontWeight={400}>đã thực hiện</Typography>
+                    </Typography>
+                    <Typography variant="caption" sx={{ display: 'block', color: 'primary.main', fontWeight: 700, mt: 0.2 }}>
+                       {log.action.replace(/_/g, ' ').toUpperCase()}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                      {dayjs(log.createdAt).fromNow()}
+                    </Typography>
+                  </Box>
+                  {log.status >= 400 && <ErrorIcon color="error" sx={{ fontSize: '1rem' }} />}
+                </Box>
+              ))}
+            </Stack>
           </Paper>
         </Grid>
       </Grid>
