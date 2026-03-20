@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   Box, Typography, Chip, Avatar, Button, IconButton,
-  Tooltip, CircularProgress, Paper, Grid, Skeleton, Menu, MenuItem
+  Tooltip, CircularProgress, Paper, Grid, Skeleton, Menu, MenuItem, Stack
 } from '@mui/material'
 import {
   FavoriteBorder as LikeIcon, Favorite as LikedIcon,
@@ -30,6 +30,7 @@ export default function PostDetailPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [post, setPost] = useState<any>(null)
+  const [relatedPosts, setRelatedPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [liking, setLiking] = useState(false)
   const [bookmarking, setBookmarking] = useState(false)
@@ -37,6 +38,7 @@ export default function PostDetailPage() {
   const [reportOpen, setReportOpen] = useState(false)
 
   useEffect(() => {
+    window.scrollTo(0, 0)
     loadPost()
   }, [slug])
 
@@ -45,6 +47,14 @@ export default function PostDetailPage() {
     try {
       const { data } = await api.get(`/posts/${slug}`)
       setPost(data.post)
+      
+      // Fetch related posts (same topic)
+      if (data.post.topicId) {
+        const { data: relData } = await api.get('/posts', { 
+          params: { topic: data.post.topicId, limit: 5 } 
+        })
+        setRelatedPosts(relData.posts.filter((p: any) => p.id !== data.post.id).slice(0, 4))
+      }
     } catch (err: any) {
       if (err.response?.status === 404) navigate('/404')
     } finally {
@@ -246,6 +256,33 @@ export default function PostDetailPage() {
               Xem hồ sơ
             </Button>
           </Paper>
+
+          {/* Related Posts */}
+          {relatedPosts.length > 0 && (
+            <Paper sx={{ p: 2.5, borderRadius: 3, border: '1px solid #e2e8f0' }}>
+              <Typography variant="subtitle2" fontWeight={700} color="text.secondary" sx={{ mb: 2.5, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.1em' }}>
+                Bài viết liên quan
+              </Typography>
+              <Stack spacing={2.5}>
+                {relatedPosts.map((rel: any) => (
+                  <Box key={rel.id} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+                    {rel.coverImage && (
+                      <Avatar variant="rounded" src={rel.coverImage} sx={{ width: 60, height: 60, border: '1px solid #e2e8f0' }} />
+                    )}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" fontWeight={700} noWrap sx={{ display: 'block', mb: 0.5, color: 'inherit', textDecoration: 'none', '&:hover': { color: 'primary.light' } }} component={Link} to={`/posts/${rel.slug}`}>
+                        {rel.title}
+                      </Typography>
+                      <Stack direction="row" spacing={1.5} color="text.secondary">
+                        <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>👀 {rel.viewCount}</Typography>
+                        <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>❤️ {rel.likeCount}</Typography>
+                      </Stack>
+                    </Box>
+                  </Box>
+                ))}
+              </Stack>
+            </Paper>
+          )}
         </Box>
       </Grid>
 
