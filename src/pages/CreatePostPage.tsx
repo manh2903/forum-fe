@@ -67,7 +67,7 @@ export default function CreatePostPage({ editMode = false }: Props) {
 
     setUploadingImage(true)
     try {
-      const { data } = await api.post('/upload/image', formData, {
+      const { data } = await api.post('/upload/image?type=posts', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       setForm({ ...form, coverImage: data.url })

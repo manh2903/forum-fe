@@ -63,7 +63,7 @@ export default function AdminBanners() {
 
     setUploading(true)
     try {
-      const { data } = await api.post('/upload/image', formData, {
+      const { data } = await api.post('/upload/image?type=banners', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       setForm({ ...form, imageUrl: data.url })
