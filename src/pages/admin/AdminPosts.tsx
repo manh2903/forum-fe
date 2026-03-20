@@ -2,17 +2,20 @@ import { useState, useEffect } from 'react'
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Chip, IconButton, Button, TextField, InputAdornment,
-  CircularProgress, Pagination, Tooltip, FormControl, Select, MenuItem
+  CircularProgress, Pagination, Tooltip, FormControl, Select, MenuItem,
+  Dialog, DialogTitle, DialogContent, DialogActions, Stack, Autocomplete
 } from '@mui/material'
 import { 
   Search as SearchIcon, PushPin as PinIcon, Star as FeaturedIcon, 
-  Delete as DeleteIcon, AutoFixHigh as UpdateIcon 
+  Delete as DeleteIcon, AutoFixHigh as UpdateIcon,
+  Visibility as ShowIcon, VisibilityOff as HideIcon, Edit as EditIcon
 } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
 import { alpha } from '@mui/material/styles'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 import dayjs from 'dayjs'
+import TiptapEditor from '../../components/Editor/TiptapEditor'
 
 export default function AdminPosts() {
   const [posts, setPosts] = useState<any[]>([])
@@ -24,9 +27,11 @@ export default function AdminPosts() {
   const [topic, setTopic] = useState('')
   const [topics, setTopics] = useState<any[]>([])
   const [updatingFeatured, setUpdatingFeatured] = useState(false)
+  const [status, setStatus] = useState('')
+  const [editPost, setEditPost] = useState<any>(null)
 
   useEffect(() => { loadTopics() }, [])
-  useEffect(() => { loadPosts() }, [page, search, topic])
+  useEffect(() => { loadPosts() }, [page, search, topic, status])
 
   const loadTopics = async () => {
     const { data } = await api.get('/topics')
@@ -36,7 +41,9 @@ export default function AdminPosts() {
   const loadPosts = async () => {
     setLoading(true)
     try {
-      const { data } = await api.get('/posts', { params: { page, limit: 15, search, status: 'published', topic } })
+      const { data } = await api.get('/admin/posts', { 
+        params: { page, limit: 15, search, topicId: topic, status } 
+      })
       setPosts(data.posts)
       setTotalPages(data.totalPages)
       setTotal(data.total)
@@ -78,6 +85,25 @@ export default function AdminPosts() {
     }
   }
 
+  const handleToggleStatus = async (post: any) => {
+    try {
+      await api.put(`/admin/posts/${post.id}/status`)
+      toast.success(post.status === 'published' ? 'Đã ẩn bài viết' : 'Đã hiện bài viết')
+      loadPosts()
+    } catch { toast.error('Lỗi khi thay đổi trạng thái') }
+  }
+
+  const handleUpdatePost = async () => {
+    try {
+      await api.put(`/admin/posts/${editPost.id}`, editPost)
+      toast.success('Đã cập nhật bài viết')
+      setEditPost(null)
+      loadPosts()
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Lỗi khi cập nhật')
+    }
+  }
+
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
@@ -93,23 +119,39 @@ export default function AdminPosts() {
         </Button>
       </Box>
 
-      <Paper sx={{ p: 2, borderRadius: 3, border: '1px solid #e2e8f0', mb: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+      <Paper sx={{ p: 1.5, borderRadius: 3, border: '1px solid #e2e8f0', mb: 2, display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
         <TextField
-          placeholder="Tìm kiếm tiêu đề..."
+          placeholder="Tìm bài viết..."
           size="small"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
-          sx={{ minWidth: 300 }}
+          InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" color="action" /></InputAdornment> }}
+          sx={{ width: 220, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
         />
-        <FormControl size="small" sx={{ minWidth: 200 }}>
+        
+        <Autocomplete
+          size="small"
+          options={topics}
+          getOptionLabel={(option: any) => option.name}
+          value={topics.find(t => t.id === topic) || null}
+          onChange={(_, newValue) => { setTopic(newValue?.id || ''); setPage(1) }}
+          sx={{ width: 180 }}
+          renderInput={(params) => (
+            <TextField {...params} placeholder="Chủ đề" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+          )}
+        />
+
+        <FormControl size="small" sx={{ width: 140 }}>
           <Select
-            value={topic}
-            onChange={(e) => { setTopic(e.target.value); setPage(1) }}
+            value={status}
+            onChange={(e) => { setStatus(e.target.value); setPage(1) }}
             displayEmpty
+            sx={{ borderRadius: 2 }}
           >
-            <MenuItem value="">Tất cả chủ đề</MenuItem>
-            {topics.map(t => <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>)}
+            <MenuItem value="">Tất cả trạng thái</MenuItem>
+            <MenuItem value="published">Đã đăng</MenuItem>
+            <MenuItem value="archived">Đã ẩn</MenuItem>
+            <MenuItem value="draft">Bản nháp</MenuItem>
           </Select>
         </FormControl>
       </Paper>
@@ -123,13 +165,14 @@ export default function AdminPosts() {
               <TableCell>Tác giả</TableCell>
               <TableCell>Tags</TableCell>
               <TableCell>Stats</TableCell>
+              <TableCell>Trạng thái</TableCell>
               <TableCell>Ngày đăng</TableCell>
               <TableCell align="right">Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
             ) : posts.map((post, idx) => (
               <TableRow key={post.id} sx={{ '&:hover': { bgcolor: 'rgba(99,102,241,0.03)' } }}>
                 <TableCell><Typography variant="body2" color="text.secondary">{(page - 1) * 15 + idx + 1}</Typography></TableCell>
@@ -162,10 +205,29 @@ export default function AdminPosts() {
                   </Typography>
                 </TableCell>
                 <TableCell>
+                  <Chip 
+                    label={post.status === 'published' ? 'Đã đăng' : post.status === 'archived' ? 'Đã ẩn' : 'Nháp'} 
+                    size="small" 
+                    color={post.status === 'published' ? 'success' : 'default'} 
+                    variant={post.status === 'published' ? 'outlined' : 'filled'}
+                    sx={{ height: 20, fontSize: '0.65rem' }} 
+                  />
+                </TableCell>
+                <TableCell>
                   <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>{dayjs(post.createdAt).format('DD/MM/YY')}</Typography>
                 </TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                    <Tooltip title="Sửa bài viết">
+                      <IconButton size="small" onClick={() => setEditPost({ ...post })} color="primary">
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={post.status === 'published' ? 'Ẩn bài viết' : 'Hiện bài viết'}>
+                      <IconButton size="small" onClick={() => handleToggleStatus(post)} sx={{ color: post.status === 'published' ? '#6b7280' : '#10b981' }}>
+                        {post.status === 'published' ? <HideIcon fontSize="small" /> : <ShowIcon fontSize="small" />}
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title={post.isPinned ? 'Bỏ ghim' : 'Ghim'}>
                       <IconButton size="small" onClick={() => togglePin(post)} sx={{ color: post.isPinned ? '#0c5d95' : 'text.secondary' }}>
                         <PinIcon fontSize="small" />
@@ -194,6 +256,50 @@ export default function AdminPosts() {
           <Pagination count={totalPages} page={page} onChange={(_, p) => setPage(p)} color="primary" />
         </Box>
       )}
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editPost} onClose={() => setEditPost(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>📝 Sửa bài viết: {editPost?.title}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1.5 }}>
+            <TextField fullWidth label="Tiêu đề bài viết" value={editPost?.title || ''}
+              onChange={(e) => setEditPost({ ...editPost, title: e.target.value })} />
+            
+            <FormControl fullWidth>
+              <Select value={editPost?.topicId || ''} onChange={(e) => setEditPost({ ...editPost, topicId: e.target.value })}>
+                {topics.map(t => <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>)}
+              </Select>
+            </FormControl>
+
+            <Stack direction="row" spacing={2.5}>
+              <FormControl fullWidth>
+                <Select value={editPost?.status || 'published'} onChange={(e) => setEditPost({ ...editPost, status: e.target.value })}>
+                  <MenuItem value="published">Công khai (Published)</MenuItem>
+                  <MenuItem value="archived">Ẩn (Archived)</MenuItem>
+                  <MenuItem value="draft">Bản nháp (Draft)</MenuItem>
+                </Select>
+              </FormControl>
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flex: 1 }}>
+                <Chip label="Ghim" onClick={() => setEditPost({ ...editPost, isPinned: !editPost.isPinned })}
+                  color={editPost?.isPinned ? 'primary' : 'default'} variant={editPost?.isPinned ? 'filled' : 'outlined'} />
+                <Chip label="Nổi bật" onClick={() => setEditPost({ ...editPost, isFeatured: !editPost.isFeatured })}
+                  color={editPost?.isFeatured ? 'warning' : 'default'} variant={editPost?.isFeatured ? 'filled' : 'outlined'} />
+              </Box>
+            </Stack>
+
+            <Box sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+              <TiptapEditor 
+                value={editPost?.content || ''} 
+                onChange={(val) => setEditPost({ ...editPost, content: val })} 
+              />
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5, pt: 0 }}>
+          <Button onClick={() => setEditPost(null)} variant="outlined" sx={{ borderColor: '#e2e8f0' }}>Hủy</Button>
+          <Button onClick={handleUpdatePost} variant="contained" sx={{ px: 4 }}>Lưu thay đổi</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

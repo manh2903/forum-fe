@@ -86,20 +86,21 @@ export default function AdminUsers() {
         <Typography variant="h5" fontWeight={700}>👥 Quản lý người dùng ({total})</Typography>
       </Box>
 
-      <Paper sx={{ p: 2, borderRadius: 3, border: '1px solid #e2e8f0', mb: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+      <Paper sx={{ p: 1.5, borderRadius: 3, border: '1px solid #e2e8f0', mb: 2, display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
         <TextField
-          placeholder="Tìm kiếm username, email..."
+          placeholder="Tìm người dùng..."
           size="small"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
-          sx={{ minWidth: 260 }}
+          InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" color="action" /></InputAdornment> }}
+          sx={{ width: 220, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
         />
-        <FormControl size="small" sx={{ minWidth: 140 }}>
+        <FormControl size="small" sx={{ width: 140 }}>
           <Select
             value={role}
             onChange={(e) => { setRole(e.target.value); setPage(1) }}
             displayEmpty
+            sx={{ borderRadius: 2 }}
           >
             <MenuItem value="">Tất cả Role</MenuItem>
             <MenuItem value="user">User</MenuItem>
@@ -107,11 +108,12 @@ export default function AdminUsers() {
             <MenuItem value="admin">Admin</MenuItem>
           </Select>
         </FormControl>
-        <FormControl size="small" sx={{ minWidth: 140 }}>
+        <FormControl size="small" sx={{ width: 140 }}>
           <Select
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1) }}
             displayEmpty
+            sx={{ borderRadius: 2 }}
           >
             <MenuItem value="">Tất cả Trạng thái</MenuItem>
             <MenuItem value="active">Active</MenuItem>
