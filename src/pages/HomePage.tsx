@@ -215,8 +215,8 @@ export default function HomePage() {
                     sx={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       px: 1.5, py: 1, borderRadius: 1.5, cursor: 'pointer',
-                      bgcolor: selectedTopic === topic.id ? alpha('#6366f1', 0.15) : 'transparent',
-                      '&:hover': { bgcolor: alpha('#6366f1', 0.08) },
+                      bgcolor: selectedTopic === topic.id ? alpha('#0c5d95', 0.15) : 'transparent',
+                      '&:hover': { bgcolor: alpha('#0c5d95', 0.08) },
                       transition: 'all 0.2s',
                     }}
                   >

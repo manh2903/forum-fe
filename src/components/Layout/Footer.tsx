@@ -48,7 +48,7 @@ export default function Footer() {
       sx={{
         mt: 8,
         borderTop: '1px solid #e2e8f0',
-        bgcolor: '#f8fafc',
+        bgcolor: '#f0f5f9',
       }}
     >
       <Box sx={{ maxWidth: 1440, mx: 'auto', px: { xs: 2, md: 3 }, py: { xs: 5, md: 6 } }}>
@@ -59,14 +59,14 @@ export default function Footer() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 2 }}>
               <Box sx={{
                 width: 36, height: 36, borderRadius: '10px',
-                background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
+                background: 'linear-gradient(135deg, #0c5d95 0%, #06b6d4 100%)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
               }}>
                 <CodeIcon sx={{ color: 'white', fontSize: 20 }} />
               </Box>
               <Typography fontWeight={800} fontSize="1.1rem" letterSpacing="-0.02em">
-                Fita<Box component="span" sx={{ color: '#6366f1' }}>Vnua</Box>
+                Fita<Box component="span" sx={{ color: '#0c5d95' }}>Vnua</Box>
               </Typography>
             </Box>
             <Typography variant="body2" color="text.secondary" lineHeight={1.7} sx={{ mb: 3 }}>
@@ -86,9 +86,9 @@ export default function Footer() {
                     border: '1px solid #e2e8f0',
                     borderRadius: '8px',
                     '&:hover': {
-                      color: '#6366f1',
-                      borderColor: '#6366f1',
-                      bgcolor: alpha('#6366f1', 0.05),
+                      color: '#0c5d95',
+                      borderColor: '#0c5d95',
+                      bgcolor: alpha('#0c5d95', 0.05),
                     },
                     transition: 'all 0.2s',
                   }}
@@ -122,7 +122,7 @@ export default function Footer() {
                         textDecoration: 'none',
                         color: 'text.secondary',
                         fontWeight: 500,
-                        '&:hover': { color: '#6366f1' },
+                        '&:hover': { color: '#0c5d95' },
                         transition: 'color 0.15s',
                       }}
                     >

@@ -107,7 +107,7 @@ export default function CreatePostPage({ editMode = false }: Props) {
   }
 
   return (
-    <Box sx={{ maxWidth: 1000, mx: 'auto' }}>
+    <Box>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
         <Button startIcon={<BackIcon />} onClick={() => navigate(-1)} sx={{ color: 'text.secondary' }}>
@@ -142,7 +142,7 @@ export default function CreatePostPage({ editMode = false }: Props) {
         <Grid size={{ xs: 12, md: 8 }}>
           <Paper sx={{ borderRadius: 3, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
             {/* Title */}
-            <Box sx={{ p: 3, pb: 0 }}>
+            <Box>
               <TextField
                 fullWidth
                 placeholder="Tiêu đề bài viết..."

@@ -86,7 +86,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <Box sx={{ maxWidth: 700, mx: 'auto' }}>
+    <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h4" fontWeight={800}>🔔 Thông báo</Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -126,8 +126,8 @@ export default function NotificationsPage() {
                     onClick={() => handleClick(notif)}
                     sx={{
                       px: 3, py: 2, cursor: 'pointer',
-                      bgcolor: notif.isRead ? 'transparent' : alpha('#6366f1', 0.05),
-                      '&:hover': { bgcolor: alpha('#6366f1', 0.08) },
+                      bgcolor: notif.isRead ? 'transparent' : alpha('#0c5d95', 0.05),
+                      '&:hover': { bgcolor: alpha('#0c5d95', 0.08) },
                       transition: 'background 0.2s',
                     }}
                     secondaryAction={

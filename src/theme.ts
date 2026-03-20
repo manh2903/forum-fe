@@ -4,9 +4,9 @@ export const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#4f46e5', // Indigo 600
-      light: '#818cf8', // Indigo 400
-      dark: '#3730a3', // Indigo 800
+      main: '#0c5d95',
+      light: '#3d8cb5',
+      dark: '#094a76',
       contrastText: '#ffffff',
     },
     secondary: {
@@ -50,8 +50,8 @@ export const theme = createTheme({
           '&:hover': { transform: 'translateY(-1px)' },
         },
         contained: {
-          boxShadow: '0 4px 14px 0 rgba(79, 70, 229, 0.25)',
-          '&:hover': { boxShadow: '0 6px 20px 0 rgba(79, 70, 229, 0.35)' },
+          boxShadow: '0 4px 14px 0 rgba(12, 93, 149, 0.25)',
+          '&:hover': { boxShadow: '0 6px 20px 0 rgba(12, 93, 149, 0.35)' },
         },
       },
     },
@@ -87,7 +87,7 @@ export const theme = createTheme({
             background: '#ffffff',
             '& fieldset': { borderColor: '#cbd5e1' },
             '&:hover fieldset': { borderColor: '#94a3b8' },
-            '&.Mui-focused fieldset': { borderColor: '#4f46e5' },
+            '&.Mui-focused fieldset': { borderColor: '#0c5d95' },
           },
         },
       },
@@ -126,7 +126,7 @@ export const theme = createTheme({
     MuiAvatar: {
       styleOverrides: {
         root: {
-          background: 'linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%)',
+          background: 'linear-gradient(135deg, #0c5d95 0%, #0ea5e9 100%)',
           color: '#ffffff',
           fontWeight: 700,
         },
