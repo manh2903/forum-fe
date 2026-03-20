@@ -35,44 +35,85 @@ export default function AdminAuditLog() {
         <Table>
           <TableHead>
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', bgcolor: '#f8fafc' } }}>
-              <TableCell>Admin</TableCell>
-              <TableCell>Hành động</TableCell>
-              <TableCell>Đối tượng</TableCell>
-              <TableCell>Chi tiết</TableCell>
+              <TableCell>User</TableCell>
+              <TableCell>Hành động / Endpoint</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Duration</TableCell>
+              <TableCell>Chi tiết (Body/Error)</TableCell>
               <TableCell>IP</TableCell>
               <TableCell>Thời gian</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
             ) : logs.map(log => (
               <TableRow key={log.id} sx={{ '&:hover': { bgcolor: 'rgba(99,102,241,0.03)' } }}>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Avatar src={log.admin?.avatar} sx={{ width: 28, height: 28, fontSize: '0.7rem' }}>{log.admin?.username?.[0]}</Avatar>
-                    <Typography variant="caption">{log.admin?.username}</Typography>
+                    <Avatar src={log.user?.avatar} sx={{ width: 28, height: 28, fontSize: '0.7rem' }}>
+                      {log.user?.username?.[0] || '?'}
+                    </Avatar>
+                    <Typography variant="caption" fontWeight={600}>
+                      {log.user?.username || 'Guest'}
+                    </Typography>
                   </Box>
                 </TableCell>
                 <TableCell>
-                  <Chip label={ACTION_LABELS[log.action] || log.action} size="small"
-                    sx={{ height: 20, fontSize: '0.65rem', bgcolor: '#ffffff' }} />
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <Chip 
+                        label={log.method || 'ACTION'} 
+                        size="small" 
+                        color={log.method === 'DELETE' ? 'error' : log.method === 'POST' ? 'primary' : 'default'}
+                        sx={{ height: 18, fontSize: '0.6rem', fontWeight: 800 }} 
+                      />
+                      <Typography variant="caption" fontWeight={700}>
+                        {ACTION_LABELS[log.action] || log.action}
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace', fontSize: '0.65rem' }}>
+                      {log.endpoint}
+                    </Typography>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Chip 
+                    label={log.status || '-'} 
+                    size="small"
+                    color={!log.status || log.status < 300 ? 'success' : log.status < 400 ? 'warning' : 'error'}
+                    sx={{ height: 20, fontSize: '0.65rem', minWidth: 35 }}
+                  />
                 </TableCell>
                 <TableCell>
                   <Typography variant="caption" color="text.secondary">
-                    {log.targetType} #{log.targetId}
+                    {log.duration ? `${log.duration}ms` : '-'}
                   </Typography>
                 </TableCell>
-                <TableCell>
-                  <Typography variant="caption" color="text.secondary">
-                    {log.details ? JSON.stringify(log.details) : '-'}
+                <TableCell sx={{ maxWidth: 200 }}>
+                  <Typography 
+                    variant="caption" 
+                    color="text.secondary" 
+                    sx={{ 
+                      display: '-webkit-box', 
+                      WebkitLineClamp: 2, 
+                      WebkitBoxOrient: 'vertical', 
+                      overflow: 'hidden',
+                      fontSize: '0.65rem',
+                      fontFamily: 'monospace'
+                    }}
+                    title={log.requestBody || log.error || '-'}
+                  >
+                    {log.error ? `Error: ${log.error}` : log.requestBody || '-'}
                   </Typography>
                 </TableCell>
                 <TableCell>
                   <Typography variant="caption" color="text.secondary">{log.ipAddress || '-'}</Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="caption" color="text.secondary">{dayjs(log.createdAt).format('DD/MM HH:mm')}</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+                    {dayjs(log.createdAt).format('DD/MM HH:mm:ss')}
+                  </Typography>
                 </TableCell>
               </TableRow>
             ))}
