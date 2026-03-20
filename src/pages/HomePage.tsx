@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import {
-  Box, Grid, Typography, Button, Chip, CircularProgress,
-  Paper, Skeleton, Stack
+  Box, Grid, Typography, Button, Chip,
+  Paper, Skeleton, Stack, Avatar, Pagination
 } from '@mui/material'
 import {
   TrendingUp as TrendingIcon, NewReleases as NewIcon,
@@ -14,6 +14,10 @@ import { alpha } from '@mui/material/styles'
 import { Link, useSearchParams } from 'react-router-dom'
 import BannerCarousel from '../components/Common/BannerCarousel'
 import type { Category } from '../types'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
 
 const SORT_OPTIONS = [
   { value: 'latest', label: 'Mới nhất', icon: <NewIcon fontSize="small" /> },
@@ -50,20 +54,27 @@ export default function HomePage() {
   const [sort, setSort] = useState(searchParams.get('sort') || 'latest')
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedTopic, setSelectedTopic] = useState<number | ''>('')
+  const [savedPosts, setSavedPosts] = useState<any[]>([])
 
   useEffect(() => {
     loadPosts(1)
     loadCategories()
   }, [sort, selectedTopic])
 
+  useEffect(() => {
+    if (user) {
+      loadSavedPosts()
+    }
+  }, [user])
+
   const loadPosts = async (p: number) => {
     setLoading(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     try {
       const params: any = { page: p, limit: 10, sort }
       if (selectedTopic) params.topic = selectedTopic
       const { data } = await api.get('/posts', { params })
-      if (p === 1) setPosts(data.posts)
-      else setPosts(prev => [...prev, ...data.posts])
+      setPosts(data.posts)
       setTotalPages(data.totalPages)
       setPage(p)
     } catch (err) {
@@ -78,6 +89,15 @@ export default function HomePage() {
       const { data } = await api.get('/topics/categories')
       setCategories(data.categories)
     } catch {}
+  }
+
+  const loadSavedPosts = async () => {
+    try {
+      const { data } = await api.get('/posts', { params: { bookmarked: true, limit: 5 } })
+      setSavedPosts(data.posts)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   return (
@@ -121,16 +141,27 @@ export default function HomePage() {
           </Box>
         )}
 
-        {page < totalPages && (
-          <Box sx={{ textAlign: 'center', mt: 3 }}>
-            <Button
-              variant="outlined"
-              onClick={() => loadPosts(page + 1)}
-              disabled={loading}
-              sx={{ borderRadius: '6px', borderColor: '#e2e8f0', px: 4 }}
-            >
-              {loading ? <CircularProgress size={20} /> : 'Xem thêm'}
-            </Button>
+        {/* Pagination */}
+        {totalPages > 1 && !loading && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, mt: 4 }}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={(_, value) => loadPosts(value)}
+              color="primary"
+              shape="rounded"
+              showFirstButton
+              showLastButton
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                },
+              }}
+            />
+            <Typography variant="caption" color="text.secondary">
+              Trang {page} / {totalPages}
+            </Typography>
           </Box>
         )}
       </Grid>
@@ -170,6 +201,45 @@ export default function HomePage() {
             </Button>
           </Paper>
 
+          {/* Saved posts */}
+          {user && savedPosts.length > 0 && (
+            <Paper sx={{ p: 2.5, borderRadius: 1.5, border: '1px solid #e2e8f0' }}>
+              <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <BookmarkIcon fontSize="small" color="primary" /> Bài đã lưu
+              </Typography>
+              <Stack spacing={2}>
+                {savedPosts.map(post => (
+                  <Box key={post.id}>
+                    <Typography
+                      component={Link}
+                      to={`/posts/${post.slug}`}
+                      variant="body2"
+                      fontWeight={600}
+                      sx={{
+                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                        textDecoration: 'none', color: 'text.primary', '&:hover': { color: 'primary.main' },
+                        lineHeight: 1.4, mb: 0.5
+                      }}
+                    >
+                      {post.title}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Avatar src={post.author.avatar} sx={{ width: 16, height: 16, fontSize: '0.5rem' }}>
+                        {post.author.username[0].toUpperCase()}
+                      </Avatar>
+                      <Typography variant="caption" color="text.secondary">
+                        {post.author.username} · {dayjs(post.createdAt).fromNow()}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </Stack>
+              <Button fullWidth component={Link} to="/bookmarks" variant="outlined" size="small" sx={{ mt: 2, borderRadius: '6px', borderColor: '#e2e8f0' }}>
+                Xem tất cả
+              </Button>
+            </Paper>
+          )}
+
           {/* CTA */}
           {!user && (
             <Paper sx={{
@@ -190,7 +260,7 @@ export default function HomePage() {
           )}
 
           {/* Quick links */}
-          {user && (
+          {/* {user && (
             <Paper sx={{ p: 2.5, borderRadius: 1.5, border: '1px solid #e2e8f0' }}>
               <Typography variant="subtitle2" fontWeight={700} color="text.secondary" sx={{ mb: 1.5, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.1em' }}>
                 Nhanh
@@ -212,7 +282,7 @@ export default function HomePage() {
                 ))}
               </Stack>
             </Paper>
-          )}
+          )} */}
         </Stack>
       </Grid>
     </Grid>

@@ -55,7 +55,7 @@ export default function RegisterPage() {
             <CodeIcon sx={{ color: 'white', fontSize: 28 }} />
           </Box>
           <Typography variant="h4" fontWeight={800} letterSpacing="-0.02em">Tạo tài khoản</Typography>
-          <Typography color="text.secondary" sx={{ mt: 0.5 }}>Tham gia cộng đồng TechForum ngay hôm nay</Typography>
+          <Typography color="text.secondary" sx={{ mt: 0.5 }}>Tham gia cộng đồng FitaVnua - CNTT HVNNVN ngay hôm nay</Typography>
         </Box>
 
         <Card sx={{ borderRadius: 4, border: '1px solid #e2e8f0' }}>

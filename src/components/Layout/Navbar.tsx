@@ -57,7 +57,7 @@ export default function Navbar() {
             </Box>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               <Box component="span" sx={{ fontWeight: 800, fontSize: '1.1rem', color: 'text.primary', letterSpacing: '-0.02em' }}>
-                Tech<Box component="span" sx={{ color: '#6366f1' }}>Forum</Box>
+                Fita<Box component="span" sx={{ color: '#6366f1' }}>Vnua</Box>
               </Box>
             </Box>
           </Box>

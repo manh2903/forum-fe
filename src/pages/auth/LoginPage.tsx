@@ -55,7 +55,7 @@ export default function LoginPage() {
             Chào mừng trở lại
           </Typography>
           <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-            Đăng nhập vào tài khoản TechForum
+            Đăng nhập vào tài khoản FitaVnua
           </Typography>
         </Box>
 

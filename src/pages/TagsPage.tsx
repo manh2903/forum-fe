@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Box, Typography, Paper, Stack, Chip, CircularProgress, TextField, InputAdornment, Grid } from '@mui/material'
+import { Box, Typography, Paper, Chip, CircularProgress, TextField, InputAdornment } from '@mui/material'
 import { Search as SearchIcon } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
 import api from '../services/api'
@@ -24,8 +24,10 @@ export default function TagsPage() {
     return '0.85rem'
   }
 
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>
+
   return (
-    <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+    <Box>
       <Typography variant="h4" fontWeight={800} sx={{ mb: 1 }}>🏷️ Tags</Typography>
       <Typography color="text.secondary" sx={{ mb: 3 }}>Khám phá các tags phổ biến trong cộng đồng</Typography>
 
@@ -39,58 +41,54 @@ export default function TagsPage() {
         />
       </Paper>
 
-      {loading ? (
-        <Box sx={{ textAlign: 'center', py: 6 }}><CircularProgress /></Box>
-      ) : (
-        <Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0' }}>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center' }}>
-            {tags.map(tag => (
-              <Box
-                key={tag.id}
-                component={Link}
-                to={`/?tag=${tag.slug}`}
+      <Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0' }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center' }}>
+          {tags.map(tag => (
+            <Box
+              key={tag.id}
+              component={Link}
+              to={`/?tag=${tag.slug}`}
+              sx={{
+                display: 'inline-flex', alignItems: 'center', gap: 0.75,
+                px: 1.5, py: 0.75,
+                bgcolor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '6px',
+                textDecoration: 'none',
+                fontSize: getSize(tag.postCount),
+                color: '#475569',
+                fontWeight: 600,
+                transition: 'all 0.2s',
+                '&:hover': {
+                  borderColor: '#6366f1',
+                  color: '#6366f1',
+                  bgcolor: 'rgba(99,102,241,0.1)',
+                  transform: 'translateY(-1px)',
+                },
+              }}
+            >
+              #{tag.name}
+              <Chip
+                label={tag.postCount}
+                size="small"
                 sx={{
-                  display: 'inline-flex', alignItems: 'center', gap: 0.75,
-                  px: 1.5, py: 0.75,
-                  bgcolor: '#f8fafc',
+                  height: 22,
+                  fontSize: '0.7rem',
+                  bgcolor: '#f1f5f9',
+                  color: '#64748b',
                   border: '1px solid #e2e8f0',
-                  borderRadius: '6px',
-                  textDecoration: 'none',
-                  fontSize: getSize(tag.postCount),
-                  color: '#475569',
+                  borderRadius: '4px',
                   fontWeight: 600,
-                  transition: 'all 0.2s',
-                  '&:hover': {
-                    borderColor: '#6366f1',
-                    color: '#6366f1', // More vibrant text color on hover
-                    bgcolor: 'rgba(99,102,241,0.1)',
-                    transform: 'translateY(-1px)',
-                  },
+                  '&:hover': { borderColor: '#6366f1', color: '#6366f1', bgcolor: 'rgba(99,102,241,0.05)' }
                 }}
-              >
-                #{tag.name}
-                <Chip
-                  label={tag.postCount}
-                  size="small"
-                  sx={{
-                    height: 22,
-                    fontSize: '0.7rem',
-                    bgcolor: '#f1f5f9',
-                    color: '#64748b',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '4px',
-                    fontWeight: 600,
-                    '&:hover': { borderColor: '#6366f1', color: '#6366f1', bgcolor: 'rgba(99,102,241,0.05)' }
-                  }}
-                />
-              </Box>
-            ))}
-          </Box>
-          {tags.length === 0 && (
-            <Typography align="center" color="text.secondary" sx={{ py: 4 }}>Không tìm thấy tag nào</Typography>
-          )}
-        </Paper>
-      )}
+              />
+            </Box>
+          ))}
+        </Box>
+        {tags.length === 0 && (
+          <Typography align="center" color="text.secondary" sx={{ py: 4 }}>Không tìm thấy tag nào</Typography>
+        )}
+      </Paper>
     </Box>
   )
 }
