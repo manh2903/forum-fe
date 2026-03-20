@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import {
-  Box, Typography, Paper, Grid, Card, CardContent, Button,
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Select, MenuItem, FormControl, InputLabel, Stack, Chip, CircularProgress, IconButton, Tooltip
+  Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Button, Dialog, DialogTitle, DialogContent,
+  DialogActions, TextField, Select, MenuItem, FormControl, InputLabel,
+  Stack, Chip, CircularProgress, IconButton, Tooltip
 } from '@mui/material'
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material'
+import { alpha } from '@mui/material/styles'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
-import { alpha } from '@mui/material/styles'
 
 export default function AdminTopics() {
   const [categories, setCategories] = useState<any[]>([])
@@ -101,12 +102,17 @@ export default function AdminTopics() {
     setAddTopicOpen(true)
   }
 
+  // Flatten topics for the unified table
+  const allTopics = categories.flatMap(cat => 
+    (cat.topics || []).map((t: any) => ({ ...t, categoryName: cat.name }))
+  )
+
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>
 
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>📚 Quản lý chủ đề</Typography>
+        <Typography variant="h5" fontWeight={700}>📚 Quản lý Chủ đề & Danh mục</Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button startIcon={<AddIcon />} variant="outlined" onClick={() => openAppCat()} sx={{ borderColor: '#e2e8f0' }}>
             Thêm danh mục
@@ -117,83 +123,124 @@ export default function AdminTopics() {
         </Box>
       </Box>
 
-      {categories.map(cat => (
-        <Paper key={cat.id} sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-              <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: cat.color || '#0c5d95' }} />
-              <Typography variant="h6" fontWeight={700}>{cat.name}</Typography>
-              {cat.description && <Typography variant="body2" color="text.secondary">— {cat.description}</Typography>}
-            </Box>
-            <Box>
-              <Tooltip title="Sửa danh mục">
-                <IconButton size="small" onClick={() => openAppCat(cat)}><EditIcon fontSize="small" /></IconButton>
-              </Tooltip>
-              <Tooltip title="Xóa danh mục">
-                <IconButton size="small" sx={{ color: 'error.main' }} onClick={() => handleDeleteCategory(cat.id, cat.name)}><DeleteIcon fontSize="small" /></IconButton>
-              </Tooltip>
-            </Box>
-          </Box>
-          <Grid container spacing={1.5}>
-            {cat.topics?.map((topic: any) => (
-              <Grid key={topic.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Card sx={{ borderRadius: 2, border: '1px solid #e2e8f0', p: 0 }}>
-                  <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Typography variant="body2" fontWeight={600}>{topic.name}</Typography>
-                      <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <IconButton size="small" onClick={() => openAppTopic(topic, cat.id)} sx={{ p: 0.25 }}><EditIcon sx={{ fontSize: '1rem' }} /></IconButton>
-                        <IconButton size="small" onClick={() => handleDeleteTopic(topic.id, topic.name)} sx={{ p: 0.25, color: 'error.main' }}><DeleteIcon sx={{ fontSize: '1rem' }} /></IconButton>
-                      </Box>
-                    </Box>
-                    <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
-                      <Chip label={`${topic.postCount} bài`} size="small" sx={{ height: 18, fontSize: '0.6rem' }} />
-                      <Chip label={`${topic.followerCount} follow`} size="small" sx={{ height: 18, fontSize: '0.6rem', bgcolor: alpha('#0c5d95', 0.1), color: '#1d4ed8' }} />
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
+      {/* Categories Section */}
+      <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+        📁 Danh mục ({categories.length})
+      </Typography>
+      <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0', mb: 4, maxHeight: 300 }}>
+        <Table stickyHeader size="small">
+          <TableHead>
+            <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', bgcolor: '#f8fafc' } }}>
+              <TableCell sx={{ width: 60 }}>STT</TableCell>
+              <TableCell sx={{ width: 60 }}>Icon</TableCell>
+              <TableCell>Tên danh mục</TableCell>
+              <TableCell>Mô tả</TableCell>
+              <TableCell>Màu</TableCell>
+              <TableCell align="right">Hành động</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {categories.map((cat, idx) => (
+              <TableRow key={cat.id} sx={{ '&:hover': { bgcolor: alpha('#0c5d95', 0.02) } }}>
+                <TableCell><Typography variant="body2" color="text.secondary">{idx + 1}</Typography></TableCell>
+                <TableCell><Typography variant="h6">{cat.icon || '📁'}</Typography></TableCell>
+                <TableCell><Typography variant="body2" fontWeight={600}>{cat.name}</Typography></TableCell>
+                <TableCell><Typography variant="caption" color="text.secondary">{cat.description || '-'}</Typography></TableCell>
+                <TableCell>
+                  <Box sx={{ width: 24, height: 24, borderRadius: '50%', bgcolor: cat.color || '#0c5d95', border: '2px solid #fff', boxShadow: '0 0 0 1px #e2e8f0' }} />
+                </TableCell>
+                <TableCell align="right">
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Tooltip title="Sửa"><IconButton size="small" onClick={() => openAppCat(cat)}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                    <Tooltip title="Xóa"><IconButton size="small" sx={{ color: 'error.main' }} onClick={() => handleDeleteCategory(cat.id, cat.name)}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
+                  </Box>
+                </TableCell>
+              </TableRow>
             ))}
-          </Grid>
-        </Paper>
-      ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Topics Section */}
+      <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+        🏷️ Chủ đề ({allTopics.length})
+      </Typography>
+      <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0', maxHeight: 'calc(100vh - 450px)' }}>
+        <Table stickyHeader size="small">
+          <TableHead>
+            <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', bgcolor: '#f8fafc' } }}>
+              <TableCell sx={{ width: 60 }}>STT</TableCell>
+              <TableCell>Tên chủ đề</TableCell>
+              <TableCell>Danh mục</TableCell>
+              <TableCell>Bài viết</TableCell>
+              <TableCell>Follower</TableCell>
+              <TableCell>Mô tả</TableCell>
+              <TableCell align="right">Hành động</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {allTopics.map((topic, idx) => (
+              <TableRow key={topic.id} sx={{ '&:hover': { bgcolor: alpha('#0c5d95', 0.03) } }}>
+                <TableCell><Typography variant="body2" color="text.secondary">{idx + 1}</Typography></TableCell>
+                <TableCell><Typography variant="body2" fontWeight={600}>{topic.name}</Typography></TableCell>
+                <TableCell>
+                  <Chip label={topic.categoryName} size="small" sx={{ height: 20, fontSize: '0.65rem', bgcolor: alpha('#0c5d95', 0.08), color: '#0c5d95', border: '1px solid', borderColor: alpha('#0c5d95', 0.2) }} />
+                </TableCell>
+                <TableCell><Typography variant="body2">{topic.postCount}</Typography></TableCell>
+                <TableCell><Typography variant="body2">{topic.followerCount}</Typography></TableCell>
+                <TableCell>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {topic.description || '-'}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right">
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                    <Tooltip title="Sửa"><IconButton size="small" onClick={() => openAppTopic(topic)}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                    <Tooltip title="Xóa"><IconButton size="small" sx={{ color: 'error.main' }} onClick={() => handleDeleteTopic(topic.id, topic.name)}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {/* Add category dialog */}
-      <Dialog open={addCatOpen} onClose={() => setAddCatOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{catEditingId ? 'Sửa danh mục' : 'Thêm danh mục mới'}</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField label="Tên danh mục *" value={catForm.name} onChange={(e) => setCatForm({ ...catForm, name: e.target.value })} />
-            <TextField label="Mô tả" value={catForm.description} onChange={(e) => setCatForm({ ...catForm, description: e.target.value })} multiline rows={2} />
-            <TextField label="Icon (emoji)" value={catForm.icon} onChange={(e) => setCatForm({ ...catForm, icon: e.target.value })} />
+      <Dialog open={addCatOpen} onClose={() => setAddCatOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <DialogTitle sx={{ fontWeight: 700 }}>{catEditingId ? 'Sửa danh mục' : 'Thêm danh mục mới'}</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2.5} sx={{ py: 1 }}>
+            <TextField fullWidth label="Tên danh mục *" value={catForm.name} onChange={(e) => setCatForm({ ...catForm, name: e.target.value })} />
+            <TextField fullWidth label="Mô tả" value={catForm.description} onChange={(e) => setCatForm({ ...catForm, description: e.target.value })} multiline rows={2} />
+            <TextField fullWidth label="Icon (emoji)" value={catForm.icon} onChange={(e) => setCatForm({ ...catForm, icon: e.target.value })} placeholder="vd: 📁, 💻, 🎨" />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography variant="body2">Màu:</Typography>
-              <input type="color" value={catForm.color} onChange={(e) => setCatForm({ ...catForm, color: e.target.value })} style={{ width: 48, height: 36, border: 'none', cursor: 'pointer' }} />
+              <Typography variant="body2" fontWeight={600}>Màu nhận diện:</Typography>
+              <input type="color" value={catForm.color} onChange={(e) => setCatForm({ ...catForm, color: e.target.value })} style={{ width: 60, height: 40, border: '2px solid #e2e8f0', borderRadius: '4px', cursor: 'pointer', padding: 0 }} />
             </Box>
           </Stack>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setAddCatOpen(false)} variant="outlined" sx={{ borderColor: '#e2e8f0' }}>Hủy</Button>
           <Button onClick={handleAddCategory} variant="contained">{catEditingId ? 'Cập nhật' : 'Thêm'}</Button>
         </DialogActions>
       </Dialog>
 
       {/* Add topic dialog */}
-      <Dialog open={addTopicOpen} onClose={() => setAddTopicOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{topicEditingId ? 'Sửa chủ đề' : 'Thêm chủ đề mới'}</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
+      <Dialog open={addTopicOpen} onClose={() => setAddTopicOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <DialogTitle sx={{ fontWeight: 700 }}>{topicEditingId ? 'Sửa chủ đề' : 'Thêm chủ đề mới'}</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2.5} sx={{ py: 1 }}>
             <FormControl fullWidth>
               <InputLabel>Danh mục *</InputLabel>
               <Select value={topicForm.categoryId} onChange={(e) => setTopicForm({ ...topicForm, categoryId: e.target.value })} label="Danh mục *">
                 {categories.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
               </Select>
             </FormControl>
-            <TextField label="Tên chủ đề *" value={topicForm.name} onChange={(e) => setTopicForm({ ...topicForm, name: e.target.value })} />
-            <TextField label="Mô tả" value={topicForm.description} onChange={(e) => setTopicForm({ ...topicForm, description: e.target.value })} multiline rows={2} />
+            <TextField fullWidth label="Tên chủ đề *" value={topicForm.name} onChange={(e) => setTopicForm({ ...topicForm, name: e.target.value })} />
+            <TextField fullWidth label="Mô tả" value={topicForm.description} onChange={(e) => setTopicForm({ ...topicForm, description: e.target.value })} multiline rows={2} />
           </Stack>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setAddTopicOpen(false)} variant="outlined" sx={{ borderColor: '#e2e8f0' }}>Hủy</Button>
           <Button onClick={handleAddTopic} variant="contained">{topicEditingId ? 'Cập nhật' : 'Thêm'}</Button>
         </DialogActions>

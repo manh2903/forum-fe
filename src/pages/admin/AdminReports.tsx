@@ -68,8 +68,8 @@ export default function AdminReports() {
         </FormControl>
       </Box>
 
-      <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0' }}>
-        <Table>
+      <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0', maxHeight: 'calc(100vh - 280px)' }}>
+        <Table stickyHeader>
           <TableHead>
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', bgcolor: '#f8fafc' } }}>
               <TableCell sx={{ width: 60 }}>STT</TableCell>

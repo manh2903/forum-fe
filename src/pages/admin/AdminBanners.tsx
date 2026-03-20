@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
 import {
-  Box, Typography, Grid, Card, CardMedia, CardContent, Button,
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, FormControlLabel, Switch, Stack, IconButton, CircularProgress
+  Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Button, Dialog, DialogTitle, DialogContent,
+  DialogActions, TextField, FormControlLabel, Switch, Stack, IconButton,
+  CircularProgress, Tooltip, Avatar, Chip
 } from '@mui/material'
 import {
   Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon,
   CloudUpload as CloudUploadIcon, Visibility as ViewIcon,
   VisibilityOff as HiddenIcon
 } from '@mui/icons-material'
+import { alpha } from '@mui/material/styles'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 
@@ -101,13 +103,13 @@ export default function AdminBanners() {
     }
   }
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>
 
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
-          <Typography variant="h5" fontWeight={700}>Quản lý Banner</Typography>
+          <Typography variant="h5" fontWeight={700}>🖼️ Quản lý Banner ({banners.length})</Typography>
           <Typography variant="body2" color="text.secondary">Cấu hình banner quảng bá trên trang chủ</Typography>
         </Box>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
@@ -115,53 +117,83 @@ export default function AdminBanners() {
         </Button>
       </Box>
 
-      <Grid container spacing={3}>
-        {banners.map((banner: any) => (
-          <Grid size={{ xs: 12, md: 6, lg: 4 }} key={banner.id}>
-            <Card sx={{ borderRadius: 1.5, border: '1px solid #e2e8f0', overflow: 'hidden', position: 'relative' }}>
-              <CardMedia
-                component="img"
-                height="160"
-                image={banner.imageUrl}
-                alt={banner.title}
-                sx={{ opacity: banner.isActive ? 1 : 0.6 }}
-              />
-              <CardContent sx={{ p: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
-                  <Typography variant="subtitle1" fontWeight={700} noWrap sx={{ flex: 1, mr: 1 }}>
-                    {banner.title || 'Không có tiêu đề'}
-                  </Typography>
-                  <Stack direction="row" spacing={0.5}>
-                    <IconButton size="small" onClick={() => handleOpen(banner)} color="primary">
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => handleDelete(banner.id)} color="error">
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Stack>
-                </Box>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="caption" color="text.secondary">Thứ tự: {banner.order}</Typography>
-                  <Box sx={{ flex: 1 }} />
+      <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0', maxHeight: 'calc(100vh - 280px)' }}>
+        <Table stickyHeader>
+          <TableHead>
+            <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', bgcolor: '#f8fafc' } }}>
+              <TableCell sx={{ width: 60 }}>STT</TableCell>
+              <TableCell>Ảnh</TableCell>
+              <TableCell>Tiêu đề / Link</TableCell>
+              <TableCell>Vị trí</TableCell>
+              <TableCell>Thứ tự</TableCell>
+              <TableCell>Trạng thái</TableCell>
+              <TableCell align="right">Hành động</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {banners.map((banner: any, idx) => (
+              <TableRow key={banner.id} sx={{ '&:hover': { bgcolor: alpha('#0c5d95', 0.03) } }}>
+                <TableCell><Typography variant="body2" color="text.secondary">{idx + 1}</Typography></TableCell>
+                <TableCell>
+                  <Avatar 
+                    variant="rounded" 
+                    src={banner.imageUrl} 
+                    sx={{ width: 100, height: 50, border: '1px solid #e2e8f0' }} 
+                  />
+                </TableCell>
+                <TableCell>
+                  <Box>
+                    <Typography variant="body2" fontWeight={600}>{banner.title || 'Không có tiêu đề'}</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {banner.link || 'N/A'}
+                    </Typography>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Chip label={banner.position} size="small" sx={{ height: 20, fontSize: '0.65rem' }} />
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">{banner.order}</Typography>
+                </TableCell>
+                <TableCell>
                   {banner.isActive ? (
-                    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ color: 'success.main' }}>
-                      <ViewIcon sx={{ fontSize: 14 }} />
-                      <Typography variant="caption" fontWeight={600}>Đang hiển thị</Typography>
-                    </Stack>
+                    <Chip 
+                      icon={<ViewIcon sx={{ fontSize: '14px !important' }} />} 
+                      label="Hiển thị" 
+                      size="small" 
+                      color="success" 
+                      sx={{ height: 20, fontSize: '0.65rem', bgcolor: '#10b98120', color: '#10b981' }} 
+                    />
                   ) : (
-                    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ color: 'text.disabled' }}>
-                      <HiddenIcon sx={{ fontSize: 14 }} />
-                      <Typography variant="caption" fontWeight={600}>Đã ẩn</Typography>
-                    </Stack>
+                    <Chip 
+                      icon={<HiddenIcon sx={{ fontSize: '14px !important' }} />} 
+                      label="Đã ẩn" 
+                      size="small" 
+                      sx={{ height: 20, fontSize: '0.65rem', bgcolor: '#64748b20', color: '#64748b' }} 
+                    />
                   )}
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+                </TableCell>
+                <TableCell align="right">
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                    <Tooltip title="Chỉnh sửa">
+                      <IconButton size="small" onClick={() => handleOpen(banner)} color="primary">
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Xóa">
+                      <IconButton size="small" onClick={() => handleDelete(banner.id)} color="error">
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
         <DialogTitle sx={{ fontWeight: 700 }}>
           {editingId ? 'Chỉnh sửa Banner' : 'Thêm Banner mới'}
         </DialogTitle>
@@ -174,20 +206,20 @@ export default function AdminBanners() {
             />
             
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>Hình ảnh Banner</Typography>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Hình ảnh Banner</Typography>
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <TextField
                   fullWidth size="small" placeholder="URL hình ảnh..."
                   value={form.imageUrl}
                   onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
                 />
-                <Button component="label" variant="outlined" sx={{ minWidth: 44, px: 0 }}>
+                <Button component="label" variant="outlined" sx={{ minWidth: 44, px: 0, borderColor: '#e2e8f0' }}>
                   {uploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
                   <input type="file" hidden accept="image/*" onChange={handleUpload} />
                 </Button>
               </Box>
               {form.imageUrl && (
-                <Box component="img" src={form.imageUrl} sx={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 1, mt: 1 }} />
+                <Box component="img" src={form.imageUrl} sx={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 2, mt: 1.5, border: '1px solid #e2e8f0' }} />
               )}
             </Box>
 
@@ -198,31 +230,27 @@ export default function AdminBanners() {
               onChange={(e) => setForm({ ...form, link: e.target.value })}
             />
 
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 6 }}>
-                <TextField
-                  fullWidth type="number" label="Thứ tự hiển thị"
-                  value={form.order}
-                  onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || 0 })}
-                />
-              </Grid>
-              <Grid size={{ xs: 6 }}>
-                <TextField
-                  fullWidth label="Vị trí"
-                  value={form.position}
-                  onChange={(e) => setForm({ ...form, position: e.target.value })}
-                />
-              </Grid>
-            </Grid>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                fullWidth type="number" label="Thứ tự hiển thị"
+                value={form.order}
+                onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || 0 })}
+              />
+              <TextField
+                fullWidth label="Vị trí"
+                value={form.position}
+                onChange={(e) => setForm({ ...form, position: e.target.value })}
+              />
+            </Box>
 
             <FormControlLabel
-              control={<Switch checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />}
+              control={<Switch checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} color="primary" />}
               label="Kích hoạt banner này"
             />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
-          <Button onClick={() => setOpen(false)}>Hủy</Button>
+          <Button onClick={() => setOpen(false)} variant="outlined" sx={{ borderColor: '#e2e8f0' }}>Hủy</Button>
           <Button variant="contained" onClick={handleSubmit} disabled={uploading}>
             {editingId ? 'Cập nhật' : 'Thêm mới'}
           </Button>
