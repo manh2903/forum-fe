@@ -5,7 +5,8 @@ import {
 } from '@mui/material'
 import {
   TrendingUp as TrendingIcon, NewReleases as NewIcon,
-  LocalFireDepartment as HotIcon, Bookmark as BookmarkIcon
+  LocalFireDepartment as HotIcon, Bookmark as BookmarkIcon,
+  EmojiEvents as TrophyIcon, WorkspacePremium as ReputationIcon
 } from '@mui/icons-material'
 import PostCard from '../components/Post/PostCard'
 import api from '../services/api'
@@ -55,6 +56,7 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedTopic, setSelectedTopic] = useState<number | ''>('')
   const [savedPosts, setSavedPosts] = useState<any[]>([])
+  const [topAuthors, setTopAuthors] = useState<any[]>([])
 
   useEffect(() => {
     loadPosts(1)
@@ -65,6 +67,7 @@ export default function HomePage() {
     if (user) {
       loadSavedPosts()
     }
+    loadTopAuthors()
   }, [user])
 
   const loadPosts = async (p: number) => {
@@ -98,6 +101,13 @@ export default function HomePage() {
     } catch (err) {
       console.error(err)
     }
+  }
+
+  const loadTopAuthors = async () => {
+    try {
+      const { data } = await api.get('/users', { params: { limit: 5 } })
+      setTopAuthors(data.users)
+    } catch {}
   }
 
   return (
@@ -255,6 +265,63 @@ export default function HomePage() {
               <Stack spacing={1}>
                 <Button component={Link} to="/register" variant="contained" fullWidth>Đăng ký miễn phí</Button>
                 <Button component={Link} to="/login" variant="outlined" fullWidth sx={{ borderColor: '#e2e8f0' }}>Đăng nhập</Button>
+              </Stack>
+            </Paper>
+          )}
+
+          {/* Top Authors */}
+          {topAuthors.length > 0 && (
+            <Paper sx={{ p: 2.5, borderRadius: 1.5, border: '1px solid #e2e8f0' }}>
+              <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TrophyIcon fontSize="small" color="warning" /> Tác giả hàng đầu
+              </Typography>
+              <Stack spacing={1.5}>
+                {topAuthors.map((author, idx) => (
+                  <Box
+                    key={author.id}
+                    component={Link}
+                    to={`/profile/${author.username}`}
+                    sx={{
+                      display: 'flex', alignItems: 'center', gap: 1.5,
+                      textDecoration: 'none', px: 1, py: 0.75, borderRadius: 1.5,
+                      '&:hover': { bgcolor: alpha('#6366f1', 0.06) },
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {/* Rank badge */}
+                    <Box sx={{
+                      width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      bgcolor: idx === 0 ? '#fbbf24' : idx === 1 ? '#94a3b8' : idx === 2 ? '#b45309' : alpha('#6366f1', 0.1),
+                      fontSize: '0.6rem', fontWeight: 800,
+                      color: idx < 3 ? 'white' : '#6366f1',
+                    }}>
+                      {idx + 1}
+                    </Box>
+                    <Avatar
+                      src={author.avatar}
+                      sx={{ width: 34, height: 34, fontSize: '0.8rem', flexShrink: 0 }}
+                    >
+                      {author.username[0].toUpperCase()}
+                    </Avatar>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" fontWeight={700} color="text.primary" noWrap>
+                        {author.username}
+                      </Typography>
+                      {author.jobTitle && (
+                        <Typography variant="caption" color="text.secondary" noWrap display="block">
+                          {author.jobTitle}
+                        </Typography>
+                      )}
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4, flexShrink: 0 }}>
+                      <ReputationIcon sx={{ fontSize: 13, color: '#6366f1' }} />
+                      <Typography variant="caption" fontWeight={700} color="primary">
+                        {author.reputation}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
               </Stack>
             </Paper>
           )}

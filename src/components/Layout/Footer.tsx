@@ -137,12 +137,9 @@ export default function Footer() {
 
         <Divider sx={{ my: 4, borderColor: '#e2e8f0' }} />
 
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 2 }}>
           <Typography variant="body2" color="text.secondary">
             © {new Date().getFullYear()} FitaVnua. Được tạo với ❤️ bởi sinh viên khoa CNTT - HVNNVN.
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Xây dựng bằng React · Node.js · MySQL
           </Typography>
         </Box>
       </Box>
