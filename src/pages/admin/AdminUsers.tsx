@@ -3,9 +3,12 @@ import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Avatar, Chip, IconButton, Button, TextField,
   InputAdornment, Select, MenuItem, FormControl, Dialog, DialogTitle,
-  DialogContent, DialogActions, CircularProgress, Tooltip, Pagination
+  DialogContent, DialogActions, CircularProgress, Tooltip, Pagination, Stack
 } from '@mui/material'
-import { Search as SearchIcon, Block as BanIcon, CheckCircle as UnbanIcon, AdminPanelSettings as RoleIcon } from '@mui/icons-material'
+import { 
+  Search as SearchIcon, Block as BanIcon, CheckCircle as UnbanIcon, 
+  AdminPanelSettings as RoleIcon, Edit as EditIcon 
+} from '@mui/icons-material'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 import dayjs from 'dayjs'
@@ -23,6 +26,7 @@ export default function AdminUsers() {
   const [newRole, setNewRole] = useState('')
   const [role, setRole] = useState('')
   const [status, setStatus] = useState('')
+  const [editUser, setEditUser] = useState<any>(null)
 
   useEffect(() => {
     loadUsers()
@@ -63,6 +67,17 @@ export default function AdminUsers() {
       setRoleDialog(null)
       loadUsers()
     } catch { toast.error('Lỗi khi đổi role') }
+  }
+
+  const handleUpdateUser = async () => {
+    try {
+      await api.put(`/admin/users/${editUser.id}`, editUser)
+      toast.success('Đã cập nhật thông tin')
+      setEditUser(null)
+      loadUsers()
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Lỗi khi cập nhật user')
+    }
   }
 
   return (
@@ -158,6 +173,11 @@ export default function AdminUsers() {
                 <TableCell><Typography variant="caption" color="text.secondary">{dayjs(user.createdAt).format('DD/MM/YY')}</Typography></TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                    <Tooltip title="Sửa thông tin">
+                      <IconButton size="small" onClick={() => setEditUser({ ...user })} color="primary">
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title="Đổi role">
                       <IconButton size="small" onClick={() => { setRoleDialog(user); setNewRole(user.role) }}>
                         <RoleIcon fontSize="small" />
@@ -218,6 +238,44 @@ export default function AdminUsers() {
         <DialogActions>
           <Button onClick={() => setRoleDialog(null)} variant="outlined" sx={{ borderColor: '#e2e8f0' }}>Hủy</Button>
           <Button onClick={handleRoleChange} variant="contained">Lưu</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit user dialog */}
+      <Dialog open={!!editUser} onClose={() => setEditUser(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>📝 Sửa thông tin: {editUser?.username}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1.5 }}>
+            <Stack direction="row" spacing={2.5}>
+              <TextField fullWidth label="Họ và tên" value={editUser?.fullName || ''}
+                onChange={(e) => setEditUser({ ...editUser, fullName: e.target.value })} />
+              <TextField fullWidth label="Username" value={editUser?.username || ''}
+                onChange={(e) => setEditUser({ ...editUser, username: e.target.value })} />
+            </Stack>
+            <TextField fullWidth label="Email" value={editUser?.email || ''}
+              onChange={(e) => setEditUser({ ...editUser, email: e.target.value })} />
+            <Stack direction="row" spacing={2.5}>
+              <TextField fullWidth label="Mã sinh viên" value={editUser?.studentId || ''}
+                onChange={(e) => setEditUser({ ...editUser, studentId: e.target.value })} />
+              <TextField fullWidth label="Lớp" value={editUser?.class || ''}
+                onChange={(e) => setEditUser({ ...editUser, class: e.target.value })} />
+            </Stack>
+            <Stack direction="row" spacing={2.5}>
+              <TextField fullWidth type="number" label="Điểm uy tín (⭐)" value={editUser?.reputation || 0}
+                onChange={(e) => setEditUser({ ...editUser, reputation: parseInt(e.target.value) })} />
+              <FormControl fullWidth>
+                <Select value={editUser?.role || 'user'} onChange={(e) => setEditUser({ ...editUser, role: e.target.value })}>
+                  <MenuItem value="user">User</MenuItem>
+                  <MenuItem value="moderator">Moderator</MenuItem>
+                  <MenuItem value="admin">Admin</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5, pt: 0 }}>
+          <Button onClick={() => setEditUser(null)} variant="outlined" sx={{ borderColor: '#e2e8f0' }}>Hủy</Button>
+          <Button onClick={handleUpdateUser} variant="contained" sx={{ px: 4 }}>Lưu thay đổi</Button>
         </DialogActions>
       </Dialog>
     </Box>
