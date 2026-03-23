@@ -174,16 +174,30 @@ export default function Navbar() {
             {user ? (
               <>
                 <Tooltip title="Viết bài">
-                  <Button
-                    component={Link}
-                    to="/create"
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    size="small"
-                    sx={{ display: { xs: 'none', sm: 'flex' }, borderRadius: '10px' }}
-                  >
-                    Viết bài
-                  </Button>
+                  <Box>
+                    <Button
+                      component={Link}
+                      to="/create"
+                      variant="contained"
+                      startIcon={<AddIcon />}
+                      size="small"
+                      sx={{ display: { xs: 'none', sm: 'flex' }, borderRadius: '10px' }}
+                    >
+                      Viết bài
+                    </Button>
+                    <IconButton
+                      component={Link}
+                      to="/create"
+                      color="primary"
+                      sx={{ 
+                        display: { xs: 'flex', sm: 'none' }, 
+                        bgcolor: alpha('#0c5d95', 0.1),
+                        borderRadius: '10px'
+                      }}
+                    >
+                      <AddIcon />
+                    </IconButton>
+                  </Box>
                 </Tooltip>
 
                 <Tooltip title="Thông báo">
