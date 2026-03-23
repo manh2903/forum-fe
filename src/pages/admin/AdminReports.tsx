@@ -27,7 +27,7 @@ export default function AdminReports() {
   const { loading: authLoading } = useAuth()
   const [reports, setReports] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [statusFilter, setStatusFilter] = useState('pending')
+  const [statusFilter, setStatusFilter] = useState('all')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [resolveDialog, setResolveDialog] = useState<any>(null)
@@ -79,6 +79,7 @@ export default function AdminReports() {
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', bgcolor: '#f8fafc' } }}>
               <TableCell sx={{ width: 60 }}>STT</TableCell>
               <TableCell>Người báo cáo</TableCell>
+              <TableCell>Đối tượng bị báo cáo</TableCell>
               <TableCell>Loại nội dung</TableCell>
               <TableCell>Lý do</TableCell>
               <TableCell>Mô tả</TableCell>
@@ -89,7 +90,7 @@ export default function AdminReports() {
           </TableHead>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={8} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} align="center" sx={{ py: 4 }}><CircularProgress /></TableCell></TableRow>
             ) : reports.map((report, idx) => {
               const sc = STATUS_CONFIG[report.status]
               return (
@@ -104,8 +105,28 @@ export default function AdminReports() {
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Chip label={report.targetType} size="small"
-                      sx={{ height: 20, fontSize: '0.65rem', bgcolor: '#ffffff' }} />
+                    {report.targetOwner ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Avatar src={report.targetOwner?.avatar} sx={{ width: 28, height: 28, fontSize: '0.7rem', bgcolor: alpha('#ef4444', 0.1), color: '#ef4444' }}>
+                          {report.targetOwner?.username?.[0]}
+                        </Avatar>
+                        <Typography variant="caption" fontWeight={600}>{report.targetOwner?.username}</Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="caption" color="text.disabled">N/A</Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Chip label={report.targetType} size="small"
+                        sx={{ height: 20, fontSize: '0.65rem', mb: 0.5 }} />
+                      <Typography variant="caption" sx={{ display: 'block', fontWeight: 600, maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: report.target?.isDeleted ? 'error.main' : 'inherit' }}>
+                        {report.targetType === 'post' && (report.target?.title || `Post #${report.targetId}`)}
+                        {report.targetType === 'user' && (report.target?.username || `User #${report.targetId}`)}
+                        {report.targetType === 'comment' && (`Bình luận bởi ${report.target?.author?.username || '?'}`)}
+                        {report.target?.isDeleted && ' (Đã xóa)'}
+                      </Typography>
+                    </Box>
                   </TableCell>
                   <TableCell>
                     <Chip label={REASON_LABELS[report.reason]} size="small"
@@ -123,7 +144,7 @@ export default function AdminReports() {
                   </TableCell>
                   <TableCell><Typography variant="caption" color="text.secondary">{dayjs(report.createdAt).format('DD/MM/YY')}</Typography></TableCell>
                   <TableCell align="right">
-                    {report.status === 'pending' && (
+                    {(report.status === 'pending' || report.status === 'reviewing') && (
                       <Button size="small" variant="outlined" onClick={() => setResolveDialog(report)}
                         sx={{ borderRadius: '8px', borderColor: '#e2e8f0', fontSize: '0.7rem', py: 0.25 }}>
                         Xử lý

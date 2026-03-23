@@ -7,9 +7,10 @@ import {
   FavoriteBorder as LikeIcon, Favorite as LikedIcon,
   Reply as ReplyIcon, MoreVert as MoreIcon,
   Edit as EditIcon, Delete as DeleteIcon,
-  Send as SendIcon
+  Send as SendIcon, Flag as ReportIcon
 } from '@mui/icons-material'
 import TiptapEditor from '../Editor/TiptapEditor'
+import ReportDialog from '../Report/ReportDialog'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/vi'
@@ -66,13 +67,15 @@ function CommentInput({
 }
 
 function CommentItem({
-  comment, onLike, onReply, onUpdate, onDelete, depth = 0,
+  comment, onLike, onReply, onUpdate, onDelete, onReport, depth = 0,
   activeReplyId, setActiveReplyId, replyContent, setReplyContent, onReplySubmit, submitting
 }: {
   comment: Comment; onLike: (id: number) => void
   onReply: (parentId: number, username: string) => void
   onUpdate: (id: number, content: string) => void
-  onDelete: (id: number) => void; depth?: number
+  onDelete: (id: number) => void; 
+  onReport: (id: number) => void;
+  depth?: number
   activeReplyId: number | null; setActiveReplyId: (id: number | null) => void
   replyContent: string; setReplyContent: (val: string) => void
   onReplySubmit: () => void; submitting: boolean
@@ -129,6 +132,11 @@ function CommentItem({
                 {(isAuthor || canModerate) && (
                   <MenuItem onClick={() => { onDelete(comment.id); setAnchorEl(null) }} sx={{ color: 'error.main' }} dense>
                     <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Xóa
+                  </MenuItem>
+                )}
+                {!isAuthor && (
+                  <MenuItem onClick={() => { onReport(comment.id); setAnchorEl(null) }} sx={{ color: 'text.secondary' }} dense>
+                    <ReportIcon fontSize="small" sx={{ mr: 1 }} /> Báo cáo
                   </MenuItem>
                 )}
               </Menu>
@@ -223,6 +231,7 @@ function CommentItem({
                 onReply={onReply}
                 onUpdate={onUpdate}
                 onDelete={onDelete}
+                onReport={onReport}
                 depth={depth + 1}
                 activeReplyId={activeReplyId}
                 setActiveReplyId={setActiveReplyId}
@@ -248,6 +257,7 @@ export default function CommentSection({ postId }: { postId: number; slug?: stri
   const [replyTo, setReplyTo] = useState<{ parentId: number; username: string } | null>(null)
   const [activeReplyId, setActiveReplyId] = useState<number | null>(null)
   const [replyContent, setReplyContent] = useState('')
+  const [reportTarget, setReportTarget] = useState<number | null>(null)
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
 
@@ -392,6 +402,7 @@ export default function CommentSection({ postId }: { postId: number; slug?: stri
               }}
               onUpdate={handleUpdate}
               onDelete={handleDelete}
+              onReport={(id) => setReportTarget(id)}
               activeReplyId={activeReplyId}
               setActiveReplyId={setActiveReplyId}
               replyContent={replyContent}
@@ -416,6 +427,13 @@ export default function CommentSection({ postId }: { postId: number; slug?: stri
           </Button>
         </Box>
       )}
+      
+      <ReportDialog 
+        open={!!reportTarget} 
+        onClose={() => setReportTarget(null)} 
+        targetType="comment" 
+        targetId={reportTarget || 0} 
+      />
     </Paper>
   )
 }

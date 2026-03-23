@@ -9,8 +9,9 @@ import {
   Link as LinkIcon, LocationOn, Work, GitHub, Twitter,
   CalendarToday as JoinedIcon, Star as ReputationIcon,
   EmojiEvents as BadgeIcon, Group as FollowersIcon,
-  Close as CloseIcon
+  Close as CloseIcon, Flag as ReportIcon
 } from '@mui/icons-material'
+import ReportDialog from '../components/Report/ReportDialog'
 import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import api from '../services/api'
@@ -44,6 +45,7 @@ export default function ProfilePage() {
     open: false, title: '', users: []
   })
   const [listLoading, setListLoading] = useState(false)
+  const [reportOpen, setReportOpen] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -171,6 +173,13 @@ export default function ProfilePage() {
               >
                 {following ? 'Đang theo dõi' : 'Theo dõi'}
               </Button>
+            )}
+            {!isOwnProfile && currentUser && (
+              <Tooltip title="Báo cáo người dùng">
+                <IconButton onClick={() => setReportOpen(true)} sx={{ border: '1px solid #e2e8f0', borderRadius: '10px', color: 'text.secondary' }}>
+                  <ReportIcon />
+                </IconButton>
+              </Tooltip>
             )}
           </Box>
         </Box>
@@ -328,6 +337,15 @@ export default function ProfilePage() {
           )}
         </DialogContent>
       </Dialog>
+      
+      {profile && (
+        <ReportDialog
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          targetType="user"
+          targetId={profile.id}
+        />
+      )}
     </Box>
   )
 }
