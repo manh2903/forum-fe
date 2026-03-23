@@ -206,7 +206,7 @@ export default function AdminAuditLog() {
                   💡 Gợi ý cho bạn
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                  Kiểm tra log của Admin <strong>{analytics?.activeAdmins?.[0]?.user?.username}</strong>, đây là người có nhiều thay đổi hệ thống nhất.
+                  Kiểm tra log của Admin, đây là người có nhiều thay đổi hệ thống nhất.
                 </Typography>
               </Box>
             </Stack>
