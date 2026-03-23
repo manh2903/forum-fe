@@ -62,18 +62,21 @@ export default function AdminReports() {
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h5" fontWeight={700}>🚩 Quản lý báo cáo</Typography>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <Select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}>
+      </Box>
+      <Paper sx={{ p: 1.5, borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', mb: 2, display: 'flex', gap: 1.5, alignItems: 'center' }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mr: 1, fontWeight: 700 }}>Bộ lọc:</Typography>
+        <FormControl size="small" sx={{ width: 140 }}>
+          <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} displayEmpty sx={{ borderRadius: 1 }}>
+            <MenuItem value="all">Tất cả</MenuItem>
             <MenuItem value="pending">Chờ xử lý</MenuItem>
             <MenuItem value="reviewing">Đang xem xét</MenuItem>
             <MenuItem value="resolved">Đã xử lý</MenuItem>
-            <MenuItem value="dismissed">Bác bỏ</MenuItem>
-            <MenuItem value="all">Tất cả</MenuItem>
+            <MenuItem value="dismissed">Đã bác bỏ</MenuItem>
           </Select>
         </FormControl>
-      </Box>
+      </Paper>
 
-      <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0', maxHeight: 'calc(100vh - 280px)' }}>
+      <TableContainer component={Paper} sx={{ borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', maxHeight: 'calc(100vh - 280px)' }}>
         <Table stickyHeader>
           <TableHead>
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', bgcolor: '#f8fafc' } }}>

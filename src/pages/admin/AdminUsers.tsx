@@ -89,24 +89,24 @@ export default function AdminUsers() {
         <Typography variant="h5" fontWeight={700}>👥 Quản lý người dùng ({total})</Typography>
       </Box>
 
-      <Paper sx={{ p: 1.5, borderRadius: 3, border: '1px solid #e2e8f0', mb: 2, display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+      <Paper sx={{ p: 1.5, borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', mb: 2, display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
         <TextField
           placeholder="Tìm người dùng..."
           size="small"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
           InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" color="action" /></InputAdornment> }}
-          sx={{ width: 220, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+          sx={{ width: 220, '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
         />
         <FormControl size="small" sx={{ width: 140 }}>
           <Select
             value={role}
             onChange={(e) => { setRole(e.target.value); setPage(1) }}
             displayEmpty
-            sx={{ borderRadius: 2 }}
+            sx={{ borderRadius: 1 }}
           >
-            <MenuItem value="">Tất cả Role</MenuItem>
-            <MenuItem value="user">User</MenuItem>
+            <MenuItem value="">Tất cả vai trò</MenuItem>
+            <MenuItem value="user">Người dùng</MenuItem>
             <MenuItem value="moderator">Moderator</MenuItem>
             <MenuItem value="admin">Admin</MenuItem>
           </Select>
@@ -116,16 +116,16 @@ export default function AdminUsers() {
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1) }}
             displayEmpty
-            sx={{ borderRadius: 2 }}
+            sx={{ borderRadius: 1 }}
           >
-            <MenuItem value="">Tất cả Trạng thái</MenuItem>
-            <MenuItem value="active">Active</MenuItem>
-            <MenuItem value="banned">Banned</MenuItem>
+            <MenuItem value="">Tất cả trạng thái</MenuItem>
+            <MenuItem value="active">Đang hoạt động</MenuItem>
+            <MenuItem value="banned">Đã bị khóa</MenuItem>
           </Select>
         </FormControl>
       </Paper>
 
-      <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0', maxHeight: 'calc(100vh - 280px)' }}>
+      <TableContainer component={Paper} sx={{ borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', maxHeight: 'calc(100vh - 280px)' }}>
         <Table stickyHeader>
           <TableHead>
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', bgcolor: '#f8fafc' } }}>

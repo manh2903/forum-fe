@@ -8,8 +8,7 @@ import { alpha } from '@mui/material/styles'
 import { 
   History as HistoryIcon, ErrorOutline as ErrorIcon, 
   Security as SecurityIcon, TrendingUp as TrendIcon,
-  Timeline as ChartIcon, VerifiedUser as AdminIcon,
-  Psychology as InsightIcon
+  Timeline as ChartIcon, Psychology as InsightIcon
 } from '@mui/icons-material'
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
@@ -26,27 +25,36 @@ const ACTION_LABELS: Record<string, string> = {
 }
 
 const StatCard = ({ title, value, icon, color, trend }: any) => (
-  <Card sx={{ borderRadius: 4, height: '100%', border: '1px solid #eef2f6', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-    <CardContent sx={{ p: 2.5 }}>
+  <Card sx={{ 
+    height: '100%',
+    borderRadius: 1, 
+    border: '2px solid #cbd5e1', 
+    background: `linear-gradient(135deg, ${color}15 0%, transparent 60%)`, 
+    boxShadow: 'none',
+    display: 'flex',
+    flexDirection: 'column'
+  }}>
+    <CardContent sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
       <Stack direction="row" spacing={2} alignItems="center">
         <Box sx={{ 
-          p: 1.5, borderRadius: 3, bgcolor: alpha(color, 0.1), color: color,
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
+          p: 1.25, borderRadius: 1, bgcolor: color, color: '#ffffff',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: `0 4px 12px ${alpha(color, 0.4)}`
         }}>
           {icon}
         </Box>
         <Box sx={{ flex: 1 }}>
-          <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             {title}
           </Typography>
-          <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5 }}>
+          <Typography variant="h4" fontWeight={900} sx={{ mt: 0.5, color: 'text.primary' }}>
             {value}
           </Typography>
         </Box>
         {trend && (
           <Box sx={{ 
-            px: 1, py: 0.5, borderRadius: 2, bgcolor: alpha(trend > 0 ? '#10b981' : '#f43f5e', 0.1),
-            color: trend > 0 ? '#10b981' : '#f43f5e', fontSize: '0.75rem', fontWeight: 700
+            px: 1, py: 0.5, borderRadius: 1, bgcolor: trend > 0 ? '#10b981' : '#f43f5e',
+            color: '#ffffff', fontSize: '0.75rem', fontWeight: 800
           }}>
             {trend > 0 ? '+' : ''}{trend}%
           </Box>
@@ -114,7 +122,7 @@ export default function AdminAuditLog() {
               value={action}
               onChange={(e) => { setAction(e.target.value); setPage(1) }}
               displayEmpty
-              sx={{ borderRadius: 2 }}
+              sx={{ borderRadius: 1 }}
             >
               <MenuItem value="">Hành động (Tất cả)</MenuItem>
               {Object.entries(ACTION_LABELS).map(([k, v]) => (
@@ -127,22 +135,19 @@ export default function AdminAuditLog() {
 
       {/* Analytics Overview */}
       <Grid container spacing={2.5} sx={{ mb: 4 }}>
-        <Grid size={{ xs: 12, md: 3 }}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <StatCard title="Tổng lượt tương tác" value={analytics?.summary?.totalLogs || 0} icon={<ChartIcon />} color="#6366f1" trend={12} />
         </Grid>
-        <Grid size={{ xs: 12, md: 3 }}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <StatCard title="Tỷ lệ lỗi hệ thống" value={`${analytics?.summary?.errorRate || 0}%`} icon={<ErrorIcon />} color="#f43f5e" trend={-3} />
         </Grid>
-        <Grid size={{ xs: 12, md: 3 }}>
-          <StatCard title="Quản trị viên tích cực" value={analytics?.activeAdmins?.[0]?.user?.username || '-'} icon={<AdminIcon />} color="#10b981" />
-        </Grid>
-        <Grid size={{ xs: 12, md: 3 }}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <StatCard title="Mức độ an toàn" value="Cao" icon={<SecurityIcon />} color="#6d28d9" />
-        </Grid>
+        </Grid> 
 
         {/* Chart Section */}
         <Grid size={{ xs: 12, lg: 8 }}>
-          <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid #eef2f6', height: 350 }}>
+          <Paper sx={{ p: 3, borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', height: 350 }}>
             <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
               <TrendIcon color="primary" /> Xu hướng hoạt động 30 ngày qua
             </Typography>
@@ -178,7 +183,7 @@ export default function AdminAuditLog() {
 
         {/* Insights / Predictions */}
         <Grid size={{ xs: 12, lg: 4 }}>
-          <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid #eef2f6', height: 350, bgcolor: alpha('#6366f1', 0.02) }}>
+          <Paper sx={{ p: 3, borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', height: 350, bgcolor: alpha('#6366f1', 0.02) }}>
             <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
               <InsightIcon sx={{ color: '#6366f1' }} /> Dự đoán & Phân tích
             </Typography>
@@ -201,14 +206,14 @@ export default function AdminAuditLog() {
                 </Typography>
               </Box>
 
-              <Box sx={{ p: 2, borderRadius: 3, bgcolor: '#fff', border: '1px dashed #6366f1' }}>
-                <Typography variant="body2" fontWeight={600} color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {/* <Paper sx={{ p: 2.5, borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', background: '#f8fafc' }}>
+                <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 1, color: 'primary.main' }}>
                   💡 Gợi ý cho bạn
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
                   Kiểm tra log của Admin, đây là người có nhiều thay đổi hệ thống nhất.
                 </Typography>
-              </Box>
+              </Paper> */}
             </Stack>
           </Paper>
         </Grid>
@@ -218,7 +223,7 @@ export default function AdminAuditLog() {
       <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
         <HistoryIcon sx={{ color: 'text.secondary' }} /> Nhật ký chi tiết
       </Typography>
-      <TableContainer component={Paper} sx={{ borderRadius: 4, border: '1px solid #eef2f6', maxHeight: 'calc(100vh - 450px)', boxShadow: 'none' }}>
+      <TableContainer component={Paper} sx={{ borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', maxHeight: 'calc(100vh - 280px)' }}>
         <Table stickyHeader size="small">
           <TableHead>
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', bgcolor: '#f8fafc', py: 1.5 } }}>

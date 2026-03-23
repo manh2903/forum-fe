@@ -3,7 +3,7 @@ import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Chip, IconButton, Button, TextField, InputAdornment,
   CircularProgress, Pagination, Tooltip, FormControl, Select, MenuItem,
-  Dialog, DialogTitle, DialogContent, DialogActions, Stack, Autocomplete
+  Dialog, DialogTitle, DialogContent, DialogActions, Stack
 } from '@mui/material'
 import { 
   Search as SearchIcon, PushPin as PinIcon, Star as FeaturedIcon, 
@@ -196,47 +196,41 @@ export default function AdminPosts() {
         </Button>
       </Box>
 
-      <Paper sx={{ p: 1.5, borderRadius: 3, border: '1px solid #e2e8f0', mb: 2, display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+      <Paper sx={{ p: 1.5, borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', mb: 2, display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
         <TextField
-          placeholder="Tìm bài viết..."
+          placeholder="Tìm tiêu đề, nội dung..." // Updated placeholder
           size="small"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
           InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" color="action" /></InputAdornment> }}
-          sx={{ width: 220, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+          sx={{ width: 220, '& .MuiOutlinedInput-root': { borderRadius: 1 } }} // Updated borderRadius
         />
-        
-        <Autocomplete
-          size="small"
-          options={topics}
-          getOptionLabel={(option: any) => option.name}
-          value={topics.find(t => t.id === topic) || null}
-          onChange={(_, newValue) => { setTopic(newValue?.id || ''); setPage(1) }}
-          sx={{ width: 180 }}
-          renderInput={(params) => (
-            <TextField {...params} placeholder="Chủ đề" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
-          )}
-        />
+        <FormControl size="small" sx={{ width: 140 }}>
+          <Select value={topic} onChange={(e) => { setTopic(e.target.value); setPage(1) }} displayEmpty sx={{ borderRadius: 1 }}>
+            <MenuItem value="">Tất cả chủ đề</MenuItem>
+            {topics.map(t => <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>)}
+          </Select>
+        </FormControl>
 
         <FormControl size="small" sx={{ width: 140 }}>
           <Select
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1) }}
             displayEmpty
-            sx={{ borderRadius: 2 }}
+            sx={{ borderRadius: 1 }}
           >
             <MenuItem value="">Tất cả trạng thái</MenuItem>
-            <MenuItem value="pending">Chờ duyệt (Pending)</MenuItem>
             <MenuItem value="published">Đã đăng</MenuItem>
+            <MenuItem value="pending">Chờ duyệt</MenuItem>
+            <MenuItem value="rejected">Bị từ chối</MenuItem>
             <MenuItem value="archived">Đã ẩn</MenuItem>
-            <MenuItem value="rejected">Bị từ chối (Rejected)</MenuItem>
-            <MenuItem value="deleted">Đã xóa (Deleted)</MenuItem>
+            <MenuItem value="deleted">Đã xóa</MenuItem>
             <MenuItem value="draft">Bản nháp</MenuItem>
           </Select>
         </FormControl>
       </Paper>
 
-      <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0', maxHeight: 'calc(100vh - 280px)' }}>
+      <TableContainer component={Paper} sx={{ borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', maxHeight: 'calc(100vh - 300px)' }}> {/* Updated borderRadius and border */}
         <Table stickyHeader>
           <TableHead>
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', bgcolor: '#f8fafc' } }}>

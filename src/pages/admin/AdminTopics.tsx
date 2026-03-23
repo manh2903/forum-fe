@@ -119,10 +119,10 @@ export default function AdminTopics() {
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h5" fontWeight={700}>📚 Quản lý Chủ đề & Danh mục</Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button startIcon={<AddIcon />} variant="outlined" onClick={() => openAppCat()} sx={{ borderColor: '#e2e8f0' }}>
+          <Button startIcon={<AddIcon />} variant="outlined" onClick={() => openAppCat()} sx={{ borderColor: '#cbd5e1', borderRadius: 1, borderWidth: '2px', fontWeight: 700 }}>
             Thêm danh mục
           </Button>
-          <Button startIcon={<AddIcon />} variant="contained" onClick={() => openAppTopic()}>
+          <Button startIcon={<AddIcon />} variant="contained" onClick={() => openAppTopic()} sx={{ borderRadius: 1, fontWeight: 700 }}>
             Thêm chủ đề
           </Button>
         </Box>
@@ -132,7 +132,7 @@ export default function AdminTopics() {
       <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
         📁 Danh mục ({categories.length})
       </Typography>
-      <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0', mb: 4, maxHeight: 300 }}>
+      <TableContainer component={Paper} sx={{ borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', mb: 4, maxHeight: 300 }}>
         <Table stickyHeader size="small">
           <TableHead>
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', bgcolor: '#f8fafc' } }}>
@@ -170,7 +170,7 @@ export default function AdminTopics() {
       <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
         🏷️ Chủ đề ({allTopics.length})
       </Typography>
-      <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid #e2e8f0', maxHeight: 'calc(100vh - 450px)' }}>
+      <TableContainer component={Paper} sx={{ borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', maxHeight: 'calc(100vh - 550px)' }}>
         <Table stickyHeader size="small">
           <TableHead>
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase', bgcolor: '#f8fafc' } }}>

@@ -82,7 +82,7 @@ export default function AdminSettings() {
         <Typography variant="body2" color="text.secondary">Quản lý nội dung các trang chính sách và điều khoản</Typography>
       </Box>
 
-      <Paper sx={{ borderRadius: 4, border: '1px solid #eef2f6', overflow: 'hidden' }}>
+      <Paper sx={{ borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', overflow: 'hidden' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#f8fafc' }}>
           <Tabs 
             value={activeTab} 
@@ -137,7 +137,7 @@ export default function AdminSettings() {
                         value={systemSettings.otp_expires_minutes}
                         onChange={(e) => setSystemSettings(prev => ({ ...prev, otp_expires_minutes: e.target.value }))}
                         helperText="Thời hạn hiệu lực của mã xác thực gửi về mail"
-                        InputProps={{ sx: { borderRadius: 2 } }}
+                        InputProps={{ sx: { borderRadius: 1 } }}
                       />
                     </Grid>
                     {/* Add more system settings here if needed */}
