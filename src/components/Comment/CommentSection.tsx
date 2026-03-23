@@ -117,14 +117,14 @@ function CommentItem({
           <Typography variant="caption" color="text.secondary">
             {dayjs(comment.createdAt).fromNow()}
           </Typography>
-          {(isAuthor || canModerate) && (
+          {user && (
             <Box sx={{ ml: 'auto' }}>
               <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ color: 'text.secondary' }}>
                 <MoreIcon sx={{ fontSize: 16 }} />
               </IconButton>
               <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}
                 PaperProps={{ sx: { borderRadius: 2, border: '1px solid #e2e8f0' } }}>
-                {isAuthor && !comment.isDeleted && (
+                {!comment.isDeleted && isAuthor && (
                   <MenuItem onClick={() => { setEditing(true); setAnchorEl(null) }} dense>
                     <EditIcon fontSize="small" sx={{ mr: 1 }} /> Sửa
                   </MenuItem>
