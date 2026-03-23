@@ -36,7 +36,7 @@ interface AuthContextType {
   socket: Socket | null
   login: (account: string, password: string) => Promise<void>
   register: (username: string, fullName: string, email: string, password: string, studentId?: string, className?: string) => Promise<any>
-  logout: () => void
+  logout: () => Promise<void>
   updateUser: (data: Partial<User>) => void
   forgotPassword: (email: string) => Promise<void>
   verifyOTP: (email: string, otp: string) => Promise<string>
@@ -155,7 +155,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await api.post('/auth/resend-otp', { email })
   }
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await api.put('/users/me/fcm-token', { token: null })
+    } catch {}
+    
     socket?.disconnect()
     setSocket(null)
     setUser(null)
