@@ -26,7 +26,7 @@ export const requestForToken = async () => {
         // console.log("FCM Token obtained:", token);
         // Lưu token vào backend
         await api.put('/users/me/fcm-token', { token });
-        toast.success("Đã bật thông báo đẩy thành công!", { duration: 3000 });
+        // toast.success("Đã bật thông báo đẩy thành công!", { duration: 3000 });
         return token;
       } else {
         console.warn("No registration token available. Check VAPID key.");

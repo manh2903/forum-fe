@@ -36,11 +36,23 @@ export default function PostDetailPage() {
   const [bookmarking, setBookmarking] = useState(false)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [reportOpen, setReportOpen] = useState(false)
+  const [viewDelay, setViewDelay] = useState(30)
 
   useEffect(() => {
     window.scrollTo(0, 0)
     loadPost()
   }, [slug])
+
+  // Count view after 30s on page
+  useEffect(() => {
+    if (!post?.id || post.status !== 'published') return
+
+    const timer = setTimeout(() => {
+      api.post(`/posts/${post.id}/view`).catch(() => {})
+    }, viewDelay * 1000)
+
+    return () => clearTimeout(timer)
+  }, [post?.id, viewDelay])
 
   const loadPost = async () => {
     setLoading(true)
@@ -48,6 +60,12 @@ export default function PostDetailPage() {
       const { data } = await api.get(`/posts/${slug}`)
       setPost(data.post)
       
+      // Fetch view delay setting
+      try {
+        const { data: setRes } = await api.get('/settings/post_view_delay')
+        if (setRes.setting?.value) setViewDelay(parseInt(setRes.setting.value))
+      } catch {}
+
       // Fetch related posts (same topic)
       if (data.post.topicId) {
         const { data: relData } = await api.get('/posts', { 

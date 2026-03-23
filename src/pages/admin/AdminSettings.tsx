@@ -15,7 +15,8 @@ export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState('system') // Default to system for convenience
   const [content, setContent] = useState('')
   const [systemSettings, setSystemSettings] = useState<{ [key: string]: string }>({
-    otp_expires_minutes: '30'
+    otp_expires_minutes: '30',
+    post_view_delay: '30'
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -57,7 +58,8 @@ export default function AdminSettings() {
         const promises = Object.entries(systemSettings).map(([key, value]) => 
           api.put(`/settings/${key}`, { 
             value, 
-            description: key === 'otp_expires_minutes' ? 'Thời gian hết hạn OTP (phút)' : 'Cấu hình hệ thống' 
+            description: key === 'otp_expires_minutes' ? 'Thời gian hết hạn OTP (phút)' : 
+                         key === 'post_view_delay' ? 'Thời gian dừng trên trang (giây) để tính 1 lượt xem' : 'Cấu hình hệ thống' 
           })
         )
         await Promise.all(promises)
@@ -134,13 +136,26 @@ export default function AdminSettings() {
                         fullWidth
                         type="number"
                         placeholder="30"
-                        value={systemSettings.otp_expires_minutes}
+                        value={systemSettings.otp_expires_minutes || '30'}
                         onChange={(e) => setSystemSettings(prev => ({ ...prev, otp_expires_minutes: e.target.value }))}
                         helperText="Thời hạn hiệu lực của mã xác thực gửi về mail"
                         InputProps={{ sx: { borderRadius: 1 } }}
                       />
                     </Grid>
-                    {/* Add more system settings here if needed */}
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Typography variant="body2" fontWeight={600} gutterBottom>
+                        Thời gian dừng trang (giây) để tính 1 lượt xem
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        type="number"
+                        placeholder="30"
+                        value={systemSettings.post_view_delay || '30'}
+                        onChange={(e) => setSystemSettings(prev => ({ ...prev, post_view_delay: e.target.value }))}
+                        helperText="Thời gian tối thiểu người dùng phải ở lại trang bài viết"
+                        InputProps={{ sx: { borderRadius: 1 } }}
+                      />
+                    </Grid>
                   </Grid>
                 </Box>
               ) : (
