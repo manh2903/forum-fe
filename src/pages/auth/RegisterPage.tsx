@@ -411,7 +411,7 @@ export default function RegisterPage() {
             </AnimatePresence>
 
             {/* Social */}
-            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+            {/* <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
               <Button fullWidth variant="outlined" className="social-btn" href="/api/auth/google" startIcon={<GoogleIcon sx={{ color: '#EA4335' }} />}>
                 Google
               </Button>
@@ -426,7 +426,7 @@ export default function RegisterPage() {
                 Hoặc đăng ký với email
               </Typography>
               <Divider sx={{ flex: 1, borderColor: '#E8E6F0' }} />
-            </Box>
+            </Box> */}
 
             {/* Form */}
             <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>

@@ -356,7 +356,7 @@ export default function LoginPage() {
             </AnimatePresence>
 
             {/* Social */}
-            <Stack direction="row" spacing={2} sx={{ mb: 4.5 }}>
+            {/* <Stack direction="row" spacing={2} sx={{ mb: 4.5 }}>
               <Button fullWidth variant="outlined" className="social-btn" href="/api/auth/google" startIcon={<GoogleIcon sx={{ color: '#EA4335' }} />}>
                 Google
               </Button>
@@ -371,7 +371,7 @@ export default function LoginPage() {
                 OR LOGIN WITH ACCOUNT
               </Typography>
               <Divider sx={{ flex: 1, borderColor: '#E8E6F0' }} />
-            </Box>
+            </Box> */}
 
             {/* Form */}
             <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
