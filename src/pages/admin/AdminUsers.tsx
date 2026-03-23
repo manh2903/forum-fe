@@ -9,11 +9,13 @@ import {
   Search as SearchIcon, Block as BanIcon, CheckCircle as UnbanIcon, 
   AdminPanelSettings as RoleIcon, Edit as EditIcon 
 } from '@mui/icons-material'
+import { useAuth } from '../../contexts/AuthContext'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 import dayjs from 'dayjs'
 
 export default function AdminUsers() {
+  const { loading: authLoading } = useAuth()
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -29,8 +31,9 @@ export default function AdminUsers() {
   const [editUser, setEditUser] = useState<any>(null)
 
   useEffect(() => {
+    if (authLoading) return
     loadUsers()
-  }, [page, search, role, status])
+  }, [authLoading, page, search, role, status])
 
   const loadUsers = async () => {
     setLoading(true)

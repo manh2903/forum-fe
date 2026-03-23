@@ -7,10 +7,12 @@ import {
 } from '@mui/material'
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material'
 import { alpha } from '@mui/material/styles'
+import { useAuth } from '../../contexts/AuthContext'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 
 export default function AdminTopics() {
+  const { loading: authLoading } = useAuth()
   const [categories, setCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [addCatOpen, setAddCatOpen] = useState(false)
@@ -20,7 +22,10 @@ export default function AdminTopics() {
   const [catEditingId, setCatEditingId] = useState<string | null>(null)
   const [topicEditingId, setTopicEditingId] = useState<string | null>(null)
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => {
+    if (authLoading) return
+    loadData()
+  }, [authLoading])
 
   const loadData = async () => {
     setLoading(true)

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box, Typography, Paper, Grid, TextField, Button, Avatar,
   Switch, FormControlLabel, Stack, CircularProgress, Alert, InputAdornment, IconButton, Chip, 
@@ -32,6 +32,23 @@ export default function SettingsPage() {
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [showPass, setShowPass] = useState(false)
   const [emailNotifications, setEmailNotifications] = useState(user?.emailNotifications ?? true)
+
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        fullName: user.fullName || '',
+        bio: user.bio || '',
+        website: user.website || '',
+        location: user.location || '',
+        jobTitle: user.jobTitle || '',
+        githubUrl: user.githubUrl || '',
+        twitterUrl: user.twitterUrl || '',
+        studentId: user.studentId || '',
+        class: user.class || '',
+      })
+      setEmailNotifications(user.emailNotifications ?? true)
+    }
+  }, [user])
 
   const handleProfileSave = async () => {
     setLoading(true)
@@ -95,7 +112,7 @@ export default function SettingsPage() {
   ]
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+    <Box sx={{ mx: 'auto' }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" fontWeight={800}>⚙️ Cài đặt</Typography>
         <Typography variant="body2" color="text.secondary">Quản lý thông tin tài khoản và tùy chọn bảo mật của bạn</Typography>

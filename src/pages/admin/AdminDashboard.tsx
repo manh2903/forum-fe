@@ -1,16 +1,13 @@
 import { useState, useEffect } from 'react'
 import {
-  Box, Typography, Paper,  Grid, CircularProgress,
-  Card, CardContent, Avatar, Chip, LinearProgress, Stack, Divider,
-  Tooltip, IconButton, Button
+  Box, Typography, Paper, Grid, Card, CardContent, CircularProgress,
+  Avatar, Stack, Chip, IconButton, Button
 } from '@mui/material'
 import {
   People as PeopleIcon, Article as PostIcon,
   Comment as CommentIcon, Flag as ReportIcon,
   TrendingUp as TrendIcon, History as HistoryIcon,
-  LocalOffer as TagIcon, AdminPanelSettings as AdminIcon,
-  CheckCircle as CheckIcon, MoreVert as MoreIcon,
-  Error as ErrorIcon
+  MoreVert as MoreIcon, Error as ErrorIcon
 } from '@mui/icons-material'
 import { 
   XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
@@ -20,6 +17,7 @@ import api from '../../services/api'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
 import { alpha } from '@mui/material/styles'
 
 dayjs.extend(relativeTime)
@@ -55,19 +53,21 @@ function StatCard({ title, value, sub, icon, color, change }: any) {
 const COLORS = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6'];
 
 export default function AdminDashboard() {
+  const { loading: authLoading } = useAuth()
   const [analytics, setAnalytics] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (authLoading) return
     api.get('/admin/analytics')
       .then(({ data }) => setAnalytics(data))
       .finally(() => setLoading(false))
-  }, [])
+  }, [authLoading])
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>
   if (!analytics) return null
 
-  const { overview, topPosts, topUsers, charts, latestAuditLogs, topTags, roleDistribution } = analytics
+  const { overview, topPosts, charts, latestAuditLogs, topTags, roleDistribution } = analytics
 
   const chartData = (() => {
     const map = new Map()
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie data={pieData} innerRadius={50} outerRadius={70} paddingAngle={5} dataKey="value">
-                      {pieData.map((entry: any, index: number) => (
+                      {pieData.map((_: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>

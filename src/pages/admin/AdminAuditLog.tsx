@@ -15,6 +15,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip as ReChartTooltip, ResponsiveContainer, Legend
 } from 'recharts'
+import { useAuth } from '../../contexts/AuthContext'
 import api from '../../services/api'
 import dayjs from 'dayjs'
 
@@ -56,6 +57,7 @@ const StatCard = ({ title, value, icon, color, trend }: any) => (
 )
 
 export default function AdminAuditLog() {
+  const { loading: authLoading } = useAuth()
   const [logs, setLogs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -63,8 +65,14 @@ export default function AdminAuditLog() {
   const [action, setAction] = useState('')
   const [analytics, setAnalytics] = useState<any>(null)
 
-  useEffect(() => { loadLogs() }, [page, action])
-  useEffect(() => { loadAnalytics() }, [])
+  useEffect(() => {
+    if (authLoading) return
+    loadLogs()
+  }, [authLoading, page, action])
+  useEffect(() => {
+    if (authLoading) return
+    loadAnalytics()
+  }, [authLoading])
 
   const loadLogs = async () => {
     setLoading(true)

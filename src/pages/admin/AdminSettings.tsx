@@ -6,10 +6,12 @@ import {
 import { Save as SaveIcon, Policy as PolicyIcon, Description as TermsIcon, Settings as SettingsIcon } from '@mui/icons-material'
 import { TextField, Grid } from '@mui/material'
 import api from '../../services/api'
+import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
 import TiptapEditor from '../../components/Editor/TiptapEditor'
 
 export default function AdminSettings() {
+  const { loading: authLoading } = useAuth()
   const [activeTab, setActiveTab] = useState('system') // Default to system for convenience
   const [content, setContent] = useState('')
   const [systemSettings, setSystemSettings] = useState<{ [key: string]: string }>({
@@ -19,8 +21,9 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
+    if (authLoading) return
     loadSetting(activeTab)
-  }, [activeTab])
+  }, [authLoading, activeTab])
 
   const loadSetting = async (key: string) => {
     setLoading(true)

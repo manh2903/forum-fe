@@ -11,10 +11,12 @@ import {
   VisibilityOff as HiddenIcon
 } from '@mui/icons-material'
 import { alpha } from '@mui/material/styles'
+import { useAuth } from '../../contexts/AuthContext'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 
 export default function AdminBanners() {
+  const { loading: authLoading } = useAuth()
   const [banners, setBanners] = useState([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
@@ -25,8 +27,9 @@ export default function AdminBanners() {
   const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
+    if (authLoading) return
     loadBanners()
-  }, [])
+  }, [authLoading])
 
   const loadBanners = async () => {
     try {

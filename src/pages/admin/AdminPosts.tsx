@@ -12,6 +12,7 @@ import {
   CheckCircle as ApproveIcon, Cancel as RejectIcon, Restore as RestoreIcon
 } from '@mui/icons-material'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
 import { alpha } from '@mui/material/styles'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
@@ -19,12 +20,12 @@ import dayjs from 'dayjs'
 import TiptapEditor from '../../components/Editor/TiptapEditor'
 
 export default function AdminPosts() {
+  const { loading: authLoading } = useAuth()
   const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [total, setTotal] = useState(0)
   const [topic, setTopic] = useState('')
   const [topics, setTopics] = useState<any[]>([])
   const [updatingFeatured, setUpdatingFeatured] = useState(false)
@@ -32,8 +33,14 @@ export default function AdminPosts() {
   const [editPost, setEditPost] = useState<any>(null)
   const [counts, setCounts] = useState<any>({})
 
-  useEffect(() => { loadTopics() }, [])
-  useEffect(() => { loadPosts() }, [page, search, topic, status])
+  useEffect(() => {
+    if (authLoading) return
+    loadTopics()
+  }, [authLoading])
+  useEffect(() => {
+    if (authLoading) return
+    loadPosts()
+  }, [authLoading, page, search, topic, status])
 
   const loadTopics = async () => {
     const { data } = await api.get('/topics')
@@ -48,7 +55,6 @@ export default function AdminPosts() {
       })
       setPosts(data.posts)
       setTotalPages(data.totalPages)
-      setTotal(data.total)
       setCounts(data.counts || {})
     } finally { setLoading(false) }
   }

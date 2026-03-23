@@ -6,6 +6,7 @@ import {
   DialogTitle, DialogContent, DialogActions, Pagination, Avatar
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
+import { useAuth } from '../../contexts/AuthContext'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 import dayjs from 'dayjs'
@@ -23,6 +24,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 }
 
 export default function AdminReports() {
+  const { loading: authLoading } = useAuth()
   const [reports, setReports] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('pending')
@@ -32,7 +34,10 @@ export default function AdminReports() {
   const [resolution, setResolution] = useState('')
   const [newStatus, setNewStatus] = useState('resolved')
 
-  useEffect(() => { loadReports() }, [statusFilter, page])
+  useEffect(() => {
+    if (authLoading) return
+    loadReports()
+  }, [authLoading, statusFilter, page])
 
   const loadReports = async () => {
     setLoading(true)
