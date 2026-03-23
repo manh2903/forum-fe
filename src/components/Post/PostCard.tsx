@@ -4,7 +4,7 @@ import {
   Visibility as ViewIcon, BookmarkBorder as BookmarkIcon,
   PushPin as PinIcon, Star as FeaturedIcon, Schedule as TimeIcon
 } from '@mui/icons-material'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { alpha } from '@mui/material/styles'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -25,14 +25,28 @@ interface Post {
 }
 
 export default function PostCard({ post, showStatus = false }: { post: Post, showStatus?: boolean }) {
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/posts/${post.slug}`);
+  };
+
+  const handleSubClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
-    <Card sx={{
-      position: 'relative',
-      overflow: 'hidden',
-      borderRadius: 1.5,
-      '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 24px rgba(0,0,0,0.3)' },
-      transition: 'all 0.25s ease',
-    }}>
+    <Card 
+      onClick={handleCardClick}
+      sx={{
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: 1.5,
+        cursor: 'pointer',
+        '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 24px rgba(0,0,0,0.3)' },
+        transition: 'all 0.25s ease',
+      }}
+    >
       {/* Featured/Pinned badges */}
       {(post.isPinned || post.isFeatured) && (
         <Box sx={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 0.5, zIndex: 1 }}>
@@ -54,7 +68,12 @@ export default function PostCard({ post, showStatus = false }: { post: Post, sho
       <CardContent sx={{ p: 3 }}>
         {/* Author + Topic */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
-          <Box component={Link} to={`/profile/${post.author.username}`} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, textDecoration: 'none', '&:hover': { opacity: 0.8 } }}>
+          <Box 
+            component={Link} 
+            to={`/profile/${post.author.username}`} 
+            onClick={handleSubClick}
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.75, textDecoration: 'none', '&:hover': { opacity: 0.8 } }}
+          >
             <Avatar src={post.author.avatar} sx={{ width: 28, height: 28, fontSize: '0.75rem' }}>
               {(post.author.fullName || post.author.username)[0].toUpperCase()}
             </Avatar>
@@ -100,6 +119,7 @@ export default function PostCard({ post, showStatus = false }: { post: Post, sho
                 label={post.topic.name}
                 component={Link}
                 to={`/topics?id=${post.topic.id}`}
+                onClick={handleSubClick}
                 clickable
                 size="small"
                 sx={{ height: 20, fontSize: '0.7rem', bgcolor: alpha('#6366f1', 0.1), color: '#818cf8', border: '1px solid', borderColor: alpha('#6366f1', 0.3) }}
@@ -149,6 +169,7 @@ export default function PostCard({ post, showStatus = false }: { post: Post, sho
                     label={`#${tag.name}`}
                     component={Link}
                     to={`/tags?tag=${tag.slug}`}
+                    onClick={handleSubClick}
                     clickable
                     size="small"
                     sx={{
