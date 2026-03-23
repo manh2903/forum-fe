@@ -59,9 +59,33 @@ function StatCard({ title, value, sub, icon, color, change }: any) {
 }
 
 export default function AdminDashboard() {
-  const { loading: authLoading } = useAuth()
+  const { loading: authLoading, socket } = useAuth()
   const [analytics, setAnalytics] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!socket) return
+
+    const handlePresence = ({ onlineCount }: { onlineCount: number }) => {
+      setAnalytics((prev: any) => {
+        if (!prev) return prev
+        const userCount = prev.overview?.userCount || 0
+        return {
+          ...prev,
+          overview: {
+            ...prev.overview,
+            onlineCount,
+            offlineCount: Math.min(userCount, Math.max(0, userCount - onlineCount))
+          }
+        }
+      })
+    }
+
+    socket.on('presence_update', handlePresence)
+    return () => {
+      socket.off('presence_update', handlePresence)
+    }
+  }, [socket])
 
   useEffect(() => {
     if (authLoading) return
@@ -107,7 +131,8 @@ export default function AdminDashboard() {
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard title="Người dùng" value={overview.userCount} 
-            change={overview.newUsersWeek} sub="Thành viên" 
+            change={overview.newUsersWeek} 
+            sub={`${overview.onlineCount || 0} đang online · ${overview.offlineCount || 0} offline`}
             icon={<UserIcon />} color="#6366f1" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
