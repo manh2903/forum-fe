@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { io, Socket } from 'socket.io-client'
 import api from '../services/api'
+import { requestForToken } from '../config/firebase'
+import { onMessage } from 'firebase/messaging'
+import { messaging } from '../config/firebase'
+import toast from 'react-hot-toast'
 
 interface User {
   id: number
@@ -52,6 +56,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
+    const unsubscribe = onMessage(messaging, (payload) => {
+      toast.success(payload.notification?.body || 'Thông báo mới', {
+        icon: '🔔',
+        duration: 5000
+      })
+      setUnreadCount(prev => prev + 1)
+    })
+    return () => unsubscribe()
+  }, [])
+
+  useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (token) {
       api.get('/auth/me')
@@ -59,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(data.user)
           initSocket(token)
           fetchUnreadCount()
+          requestForToken()
         })
         .catch(() => {
           localStorage.removeItem('accessToken')
@@ -98,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(data.user)
     initSocket(data.accessToken)
     await fetchUnreadCount()
+    requestForToken()
   }
 
   const register = async (username: string, fullName: string, email: string, password: string, studentId?: string, className?: string) => {
@@ -107,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('refreshToken', data.refreshToken)
       setUser(data.user)
       initSocket(data.accessToken)
+      requestForToken()
     }
     return data
   }
@@ -130,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('refreshToken', data.refreshToken)
     setUser(data.user)
     initSocket(data.accessToken)
+    requestForToken()
   }
 
   const resendOTP = async (email: string) => {
