@@ -22,13 +22,60 @@ import toast from 'react-hot-toast'
 dayjs.extend(relativeTime)
 dayjs.locale('vi')
 
+function CommentInput({
+  value, onChange, onSubmit, onCancel,
+  loading, user, placeholder = "Viết bình luận..."
+}: {
+  value: string; onChange: (val: string) => void; onSubmit: () => void; onCancel?: () => void;
+  loading: boolean; user: any; placeholder?: string
+}) {
+  return (
+    <Box sx={{ display: 'flex', gap: { xs: 1, md: 1.5 }, mb: 2 }}>
+      <Avatar src={user?.avatar} sx={{ width: 32, height: 32, flexShrink: 0 }}>
+        {user?.username?.[0]?.toUpperCase()}
+      </Avatar>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Box sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', mb: 1, overflow: 'hidden', bgcolor: '#ffffff' }}>
+          <TiptapEditor
+            value={value}
+            onChange={onChange}
+            minHeight="80px"
+            placeholder={placeholder}
+            hideMenu
+          />
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+          {onCancel && (
+            <Button size="small" variant="text" onClick={onCancel} disabled={loading} sx={{ color: 'text.secondary' }}>
+              Hủy
+            </Button>
+          )}
+          <Button
+            variant="contained" size="small"
+            endIcon={loading ? <CircularProgress size={14} color="inherit" /> : <SendIcon sx={{ fontSize: '14px !important' }} />}
+            onClick={onSubmit}
+            disabled={loading || !value.trim() || value === '<p></p>'}
+            sx={{ borderRadius: '8px', px: 2 }}
+          >
+            {onCancel ? 'Phản hồi' : 'Gửi'}
+          </Button>
+        </Box>
+      </Box>
+    </Box>
+  )
+}
+
 function CommentItem({
-  comment, onLike, onReply, onUpdate, onDelete, depth = 0
+  comment, onLike, onReply, onUpdate, onDelete, depth = 0,
+  activeReplyId, setActiveReplyId, replyContent, setReplyContent, onReplySubmit, submitting
 }: {
   comment: Comment; onLike: (id: number) => void
   onReply: (parentId: number, username: string) => void
   onUpdate: (id: number, content: string) => void
   onDelete: (id: number) => void; depth?: number
+  activeReplyId: number | null; setActiveReplyId: (id: number | null) => void
+  replyContent: string; setReplyContent: (val: string) => void
+  onReplySubmit: () => void; submitting: boolean
 }) {
   const { user } = useAuth()
   const [editing, setEditing] = useState(false)
@@ -95,8 +142,10 @@ function CommentItem({
             <TiptapEditor
               value={editContent}
               onChange={(val) => setEditContent(val)}
+              minHeight="100px"
+              hideMenu
             />
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
               <Button size="small" variant="contained" onClick={handleSaveEdit}>Lưu</Button>
               <Button size="small" variant="outlined" onClick={() => setEditing(false)} sx={{ borderColor: '#e2e8f0' }}>Hủy</Button>
             </Box>
@@ -134,12 +183,32 @@ function CommentItem({
               <Button
                 size="small"
                 startIcon={<ReplyIcon sx={{ fontSize: '14px !important' }} />}
-                onClick={() => onReply(comment.id, comment.author?.username)}
-                sx={{ color: 'text.secondary', minWidth: 0, fontSize: '0.75rem', py: 0.25 }}
+                onClick={() => {
+                  if (activeReplyId === comment.id) {
+                    setActiveReplyId(null)
+                  } else {
+                    onReply(comment.id, comment.author?.username)
+                  }
+                }}
+                sx={{ color: activeReplyId === comment.id ? 'primary.main' : 'text.secondary', minWidth: 0, fontSize: '0.75rem', py: 0.25 }}
               >
                 Trả lời
               </Button>
             )}
+          </Box>
+        )}
+
+        {/* Inline reply input */}
+        {activeReplyId === comment.id && (
+          <Box sx={{ mt: 1, mb: 2 }}>
+            <CommentInput 
+              value={replyContent}
+              onChange={setReplyContent}
+              onSubmit={onReplySubmit}
+              onCancel={() => setActiveReplyId(null)}
+              loading={submitting}
+              user={user}
+            />
           </Box>
         )}
 
@@ -155,6 +224,12 @@ function CommentItem({
                 onUpdate={onUpdate}
                 onDelete={onDelete}
                 depth={depth + 1}
+                activeReplyId={activeReplyId}
+                setActiveReplyId={setActiveReplyId}
+                replyContent={replyContent}
+                setReplyContent={setReplyContent}
+                onReplySubmit={onReplySubmit}
+                submitting={submitting}
               />
             ))}
           </Box>
@@ -171,6 +246,8 @@ export default function CommentSection({ postId }: { postId: number; slug?: stri
   const [submitting, setSubmitting] = useState(false)
   const [content, setContent] = useState('')
   const [replyTo, setReplyTo] = useState<{ parentId: number; username: string } | null>(null)
+  const [activeReplyId, setActiveReplyId] = useState<number | null>(null)
+  const [replyContent, setReplyContent] = useState('')
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
 
@@ -188,35 +265,48 @@ export default function CommentSection({ postId }: { postId: number; slug?: stri
   }
 
   const handleSubmit = async () => {
-    if (!content.trim()) return
+    if (!content.trim() || content === '<p></p>') return
     if (!user) return toast.error('Đăng nhập để bình luận')
     setSubmitting(true)
     try {
-      const { data } = await api.post(`/posts/${postId}/comments`, {
-        content: replyTo ? `@${replyTo.username} ${content}` : content,
-        parentId: replyTo?.parentId,
-      })
-      if (replyTo) {
-        setComments(prev => prev.map(c => {
-          if (c.id === replyTo.parentId) return { ...c, replies: [...(c.replies || []), data.comment] }
-          if (c.replies?.some(r => r.id === replyTo.parentId)) {
-            return {
-              ...c, replies: c.replies?.map(r =>
-                r.id === replyTo.parentId ? { ...r, replies: [...(r.replies || []), data.comment] } : r
-              )
-            }
-          }
-          return c
-        }))
-      } else {
-        setComments(prev => [data.comment, ...prev])
-        setTotal(prev => prev + 1)
-      }
+      const { data } = await api.post(`/posts/${postId}/comments`, { content })
+      setComments(prev => [data.comment, ...prev])
+      setTotal(prev => prev + 1)
       setContent('')
-      setReplyTo(null)
       toast.success('Đã đăng bình luận!')
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Lỗi khi đăng bình luận')
+    } finally { setSubmitting(false) }
+  }
+
+  const handleReplySubmit = async () => {
+    if (!replyContent.trim() || replyContent === '<p></p>') return
+    if (!user || !activeReplyId || !replyTo) return
+    setSubmitting(true)
+    try {
+      const { data } = await api.post(`/posts/${postId}/comments`, {
+        content: `@${replyTo.username} ${replyContent}`,
+        parentId: activeReplyId,
+      })
+      
+      setComments(prev => prev.map(c => {
+        if (c.id === activeReplyId) return { ...c, replies: [...(c.replies || []), data.comment] }
+        if (c.replies?.some(r => r.id === activeReplyId)) {
+          return {
+            ...c, replies: c.replies?.map(r =>
+              r.id === activeReplyId ? { ...r, replies: [...(r.replies || []), data.comment] } : r
+            )
+          }
+        }
+        return c
+      }))
+      
+      setReplyContent('')
+      setActiveReplyId(null)
+      setReplyTo(null)
+      toast.success('Đã gửi phản hồi!')
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Lỗi khi gửi phản hồi')
     } finally { setSubmitting(false) }
   }
 
@@ -268,37 +358,14 @@ export default function CommentSection({ postId }: { postId: number; slug?: stri
 
       {/* Comment input */}
       {user ? (
-        <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
-          <Avatar src={user.avatar} sx={{ width: 36, height: 36, flexShrink: 0 }}>
-            {user.username[0].toUpperCase()}
-          </Avatar>
-          <Box sx={{ flex: 1 }}>
-            {replyTo && (
-              <Box sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Chip label={`Trả lời @${replyTo.username}`} onDelete={() => setReplyTo(null)} size="small"
-                  sx={{ bgcolor: alpha('#6366f1', 0.15), color: '#818cf8', border: '1px solid', borderColor: alpha('#6366f1', 0.3) }} />
-              </Box>
-            )}
-            <Box sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', mb: 1 }}>
-              <TiptapEditor
-                value={content}
-                onChange={(val) => setContent(val)}
-              />
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-              <Typography variant="caption" color="text.secondary">Hỗ trợ @mention</Typography>
-              <Button
-                variant="contained" size="small"
-                endIcon={submitting ? <CircularProgress size={14} /> : <SendIcon fontSize="small" />}
-                onClick={handleSubmit}
-                disabled={submitting || !content.trim()}
-                sx={{ borderRadius: '8px' }}
-              >
-                Đăng
-              </Button>
-            </Box>
-          </Box>
-        </Box>
+        <CommentInput
+          value={content}
+          onChange={setContent}
+          onSubmit={handleSubmit}
+          loading={submitting}
+          user={user}
+          placeholder="Nhập suy nghĩ của bạn..."
+        />
       ) : (
         <Paper sx={{ p: 2, mb: 3, borderRadius: 2, bgcolor: alpha('#6366f1', 0.08), border: '1px solid', borderColor: alpha('#6366f1', 0.2), textAlign: 'center' }}>
           <Typography variant="body2" color="text.secondary">
@@ -318,9 +385,19 @@ export default function CommentSection({ postId }: { postId: number; slug?: stri
               key={comment.id}
               comment={comment}
               onLike={handleLike}
-              onReply={(parentId, username) => setReplyTo({ parentId, username })}
+              onReply={(parentId, username) => {
+                setActiveReplyId(parentId)
+                setReplyTo({ parentId, username })
+                setReplyContent('')
+              }}
               onUpdate={handleUpdate}
               onDelete={handleDelete}
+              activeReplyId={activeReplyId}
+              setActiveReplyId={setActiveReplyId}
+              replyContent={replyContent}
+              setReplyContent={setReplyContent}
+              onReplySubmit={handleReplySubmit}
+              submitting={submitting}
             />
           ))}
           {comments.length === 0 && (

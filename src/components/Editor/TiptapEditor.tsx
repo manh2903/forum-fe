@@ -5,6 +5,7 @@ import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import Underline from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
+import Placeholder from '@tiptap/extension-placeholder'
 import { Box, IconButton, Tooltip, Divider } from '@mui/material'
 import {
   FormatBold, FormatItalic, FormatUnderlined, FormatStrikethrough,
@@ -154,7 +155,19 @@ const MenuBar = ({ editor }: { editor: any }) => {
   )
 }
 
-export default function TiptapEditor({ value, onChange }: { value: string, onChange: (val: string) => void }) {
+export default function TiptapEditor({ 
+  value, 
+  onChange, 
+  minHeight = '400px',
+  placeholder = '',
+  hideMenu = false
+}: { 
+  value: string, 
+  onChange: (val: string) => void,
+  minHeight?: string,
+  placeholder?: string,
+  hideMenu?: boolean
+}) {
   const isUpdatingRef = useRef(false)
   const isSettingContentRef = useRef(false)
 
@@ -164,7 +177,10 @@ export default function TiptapEditor({ value, onChange }: { value: string, onCha
       Image,
       Link.configure({ openOnClick: false }),
       Underline,
-      TextAlign.configure({ types: ['heading', 'paragraph'] })
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Placeholder.configure({
+        placeholder: placeholder || 'Viết nội dung...',
+      })
     ],
     content: value || '<p></p>',
     onUpdate: ({ editor }) => {
@@ -176,7 +192,7 @@ export default function TiptapEditor({ value, onChange }: { value: string, onCha
     editorProps: {
       attributes: {
         class: 'markdown-body tiptap-editor-content',
-        style: 'min-height: 400px; padding: 24px; outline: none;'
+        style: `min-height: ${minHeight}; padding: 20px; outline: none;`
       },
       handleDrop: function(view, event, _slice, moved) {
         if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
@@ -238,8 +254,17 @@ export default function TiptapEditor({ value, onChange }: { value: string, onCha
   if (!editor) return null
 
   return (
-    <Box sx={{ border: 'none', borderRadius: 0, overflow: 'hidden' }}>
-      <MenuBar editor={editor} />
+    <Box sx={{ 
+      border: 'none', borderRadius: 0, overflow: 'hidden',
+      '& .tiptap p.is-editor-empty:first-of-type::before': {
+        color: '#94a3b8',
+        content: 'attr(data-placeholder)',
+        float: 'left',
+        height: 0,
+        pointerEvents: 'none',
+      }
+    }}>
+      {!hideMenu && <MenuBar editor={editor} />}
       <EditorContent editor={editor} />
     </Box>
   )
