@@ -133,6 +133,26 @@ export default function Footer() {
               </Box>
             ))}
           </Box>
+          
+          {/* Map Section */}
+          <Box sx={{ 
+            width: { xs: '100%', lg: 350 }, 
+            height: 180, 
+            overflow: 'hidden', 
+            border: '2px solid #e2e8f0',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+            bgcolor: 'white'
+          }}>
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.690045683695!2d105.92689875053574!3d21.005058238837215!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135a94c1f882977%3A0x6d016e6656923f46!2zSOG7jWMgdmnhu4duIE7DtG5nIE5naGnhu4dwIFZp4buHdCBOYW0!5e0!3m2!1svi!2s!4v1774260620503!5m2!1svi!2s"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen={true}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </Box>
         </Box>
 
         <Divider sx={{ my: 4, borderColor: '#e2e8f0' }} />

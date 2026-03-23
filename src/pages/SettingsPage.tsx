@@ -108,7 +108,7 @@ export default function SettingsPage() {
   const TABS = [
     { key: 'profile', label: 'Hồ sơ cá nhân', icon: <PersonIcon /> },
     { key: 'security', label: 'Bảo mật', icon: <LockIcon /> },
-    { key: 'notifications', label: 'Thông báo', icon: <NotifIcon /> },
+    // { key: 'notifications', label: 'Thông báo', icon: <NotifIcon /> },
   ]
 
   return (
