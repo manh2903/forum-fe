@@ -6,8 +6,9 @@ import {
 import {
   PeopleAlt as UserIcon, Article as PostIcon,
   Comment as CommentIcon, Report as ReportIcon,
-  Timeline as TrendIcon
+  Timeline as TrendIcon, Campaign as NotifIcon
 } from '@mui/icons-material'
+import SendNotificationDialog from '../../components/Admin/SendNotificationDialog'
 import {
   XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, Area, AreaChart
@@ -62,6 +63,7 @@ export default function AdminDashboard() {
   const { loading: authLoading, socket } = useAuth()
   const [analytics, setAnalytics] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [notifOpen, setNotifOpen] = useState(false)
 
   useEffect(() => {
     if (!socket) return
@@ -121,10 +123,24 @@ export default function AdminDashboard() {
     <Box>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography variant="h4" fontWeight={800}>🚀 Tổng quan Hệ thống</Typography>
-          <Typography variant="body2" color="text.secondary">Chào bạn quay trở lại. Đây là những gì đang diễn ra hôm nay.</Typography>
+          <Typography variant="h4" fontWeight={900} color="text.primary">🚀 Tổng quan Hệ thống</Typography>
+          <Typography variant="body2" color="text.secondary" fontWeight={500}>
+            Tổng quan tình hình hệ thống và hoạt động của người dùng
+          </Typography>
         </Box>
-        <Chip label={dayjs().format('DD MMMM, YYYY')} variant="outlined" sx={{ fontWeight: 600, borderRadius: 1, border: '2px solid #cbd5e1' }} />
+        <Button 
+          variant="contained" 
+          startIcon={<NotifIcon />}
+          onClick={() => setNotifOpen(true)}
+          sx={{ 
+            fontWeight: 800, 
+            borderRadius: 1,
+            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+            px: 3
+          }}
+        >
+          Gửi thông báo hệ thống
+        </Button>
       </Box>
 
       {/* Primary Stats */}
@@ -300,6 +316,12 @@ export default function AdminDashboard() {
           </Paper>
         </Grid>
       </Grid>
+
+      <SendNotificationDialog 
+        open={notifOpen} 
+        onClose={() => setNotifOpen(false)} 
+        recipient={null} 
+      />
     </Box>
   )
 }

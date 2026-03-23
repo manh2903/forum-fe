@@ -7,12 +7,15 @@ import {
 } from '@mui/material'
 import { 
   Search as SearchIcon, Block as BanIcon, CheckCircle as UnbanIcon, 
-  AdminPanelSettings as RoleIcon, Edit as EditIcon 
+  AdminPanelSettings as RoleIcon, Edit as EditIcon,
+  Campaign as NotifIcon
 } from '@mui/icons-material'
+import SendNotificationDialog from '../../components/Admin/SendNotificationDialog'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 import dayjs from 'dayjs'
+import { useDebounce } from '../../hooks/useDebounce'
 
 export default function AdminUsers() {
   const { loading: authLoading } = useAuth()
@@ -29,11 +32,13 @@ export default function AdminUsers() {
   const [role, setRole] = useState('')
   const [status, setStatus] = useState('')
   const [editUser, setEditUser] = useState<any>(null)
+  const [notifUser, setNotifUser] = useState<any>(null)
+  const debouncedSearch = useDebounce(search, 500)
 
   useEffect(() => {
     if (authLoading) return
     loadUsers()
-  }, [authLoading, page, search, role, status])
+  }, [authLoading, page, debouncedSearch, role, status])
 
   const loadUsers = async () => {
     setLoading(true)
@@ -178,6 +183,11 @@ export default function AdminUsers() {
                 <TableCell><Typography variant="caption" color="text.secondary">{dayjs(user.createdAt).format('DD/MM/YY')}</Typography></TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                    <Tooltip title="Gửi thông báo">
+                      <IconButton size="small" onClick={() => setNotifUser(user)} color="info">
+                        <NotifIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title="Sửa thông tin">
                       <IconButton size="small" onClick={() => setEditUser({ ...user })} color="primary">
                         <EditIcon fontSize="small" />
@@ -283,6 +293,12 @@ export default function AdminUsers() {
           <Button onClick={handleUpdateUser} variant="contained" sx={{ px: 4 }}>Lưu thay đổi</Button>
         </DialogActions>
       </Dialog>
+
+      <SendNotificationDialog 
+        open={!!notifUser}
+        onClose={() => setNotifUser(null)}
+        recipient={notifUser}
+      />
     </Box>
   )
 }

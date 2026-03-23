@@ -17,6 +17,7 @@ import { alpha } from '@mui/material/styles'
 import api from '../../services/api'
 import toast from 'react-hot-toast'
 import dayjs from 'dayjs'
+import { useDebounce } from '../../hooks/useDebounce'
 import TiptapEditor from '../../components/Editor/TiptapEditor'
 
 export default function AdminPosts() {
@@ -32,6 +33,7 @@ export default function AdminPosts() {
   const [status, setStatus] = useState('')
   const [editPost, setEditPost] = useState<any>(null)
   const [counts, setCounts] = useState<any>({})
+  const debouncedSearch = useDebounce(search, 500)
 
   useEffect(() => {
     if (authLoading) return
@@ -40,7 +42,7 @@ export default function AdminPosts() {
   useEffect(() => {
     if (authLoading) return
     loadPosts()
-  }, [authLoading, page, search, topic, status])
+  }, [authLoading, page, debouncedSearch, topic, status])
 
   const loadTopics = async () => {
     const { data } = await api.get('/topics')
