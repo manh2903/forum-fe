@@ -21,6 +21,7 @@ interface Post {
   author: Author; topic?: Topic; tags: Tag[]; likeCount: number; commentCount: number
   viewCount: number; bookmarkCount: number; readTime: number; isPinned: boolean
   isFeatured: boolean; createdAt: string; isLiked?: boolean; isBookmarked?: boolean
+  status?: string;
 }
 
 export default function PostCard({ post }: { post: Post }) {
@@ -64,6 +65,34 @@ export default function PostCard({ post }: { post: Post }) {
             <TimeIcon sx={{ fontSize: 13, color: 'text.secondary' }} />
             <Typography variant="body2" color="text.secondary">{dayjs(post.createdAt).fromNow()}</Typography>
           </Box>
+          {post.status && (
+            <>
+              <Typography variant="body2" color="text.secondary">·</Typography>
+              <Chip
+                label={
+                  post.status === 'published' ? 'Đã duyệt' : 
+                  post.status === 'pending' ? 'Đang duyệt' : 
+                  post.status === 'draft' ? 'Nháp' : 
+                  post.status === 'rejected' ? 'Bị từ chối' : post.status
+                }
+                size="small"
+                sx={{ 
+                  height: 20, fontSize: '0.65rem', fontWeight: 700,
+                  bgcolor: post.status === 'published' ? alpha('#10b981', 0.1) : 
+                           post.status === 'pending' ? alpha('#f59e0b', 0.1) : 
+                           post.status === 'rejected' ? alpha('#ef4444', 0.1) : alpha('#94a3b8', 0.1),
+                  color: post.status === 'published' ? '#10b981' : 
+                         post.status === 'pending' ? '#f59e0b' : 
+                         post.status === 'rejected' ? '#ef4444' : '#94a3b8',
+                  borderColor: post.status === 'published' ? alpha('#10b981', 0.3) : 
+                               post.status === 'pending' ? alpha('#f59e0b', 0.3) : 
+                               post.status === 'rejected' ? alpha('#ef4444', 0.3) : alpha('#94a3b8', 0.3),
+                  '& .MuiChip-label': { px: 1 }
+                }}
+                variant="outlined"
+              />
+            </>
+          )}
           {post.topic && (
             <>
               <Typography variant="body2" color="text.secondary">·</Typography>

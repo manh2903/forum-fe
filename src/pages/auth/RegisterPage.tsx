@@ -195,7 +195,7 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await register(form.username, form.fullName, form.email, form.password, form.studentId, form.class)
-      toast.success('Chào mừng bạn đến với FitaVnua!')
+      toast.success('Chào mừng bạn đến với Fita Vnua!')
       navigate('/')
     } catch (err: any) {
       setError(err.response?.data?.message || 'Đăng ký không thành công')
@@ -252,7 +252,7 @@ export default function RegisterPage() {
                   <CodeIcon sx={{ color: 'white', fontSize: 34 }} />
                 </Box>
                 <Typography sx={{ fontWeight: 800, fontSize: '36px', color: '#1E1B4B', letterSpacing: '-0.04em' }}>
-                  FitaVnua
+                  Fita Vnua
                 </Typography>
               </Stack>
 
@@ -373,7 +373,7 @@ export default function RegisterPage() {
                   <CodeIcon sx={{ color: 'white', fontSize: 30 }} />
                 </Box>
                 <Typography sx={{ fontWeight: 800, fontSize: '26px', color: '#1E1B4B' }}>
-                  FitaVnua
+                  Fita Vnua
                 </Typography>
               </Box>
             )}
@@ -517,7 +517,7 @@ export default function RegisterPage() {
                   >
                     Chính sách bảo mật
                   </Box>
-                  {' '}của FitaVnua.
+                  {' '}của Fita Vnua.
                 </Typography>
 
                 <Typography align="center" sx={{ mt: 1.5, fontSize: '14px', color: '#6B7280', fontWeight: 500 }}>

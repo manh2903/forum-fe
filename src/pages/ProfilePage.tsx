@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import {
   Box, Typography, Avatar, Button, Paper, Grid, Chip, Tabs,
-  Tab, Stack, CircularProgress, Divider, LinearProgress, Tooltip
+  Tab, Stack, CircularProgress, Divider, LinearProgress, Tooltip,
+  Dialog, DialogTitle, DialogContent, List, ListItem, ListItemAvatar,
+  ListItemText, IconButton
 } from '@mui/material'
 import {
   Link as LinkIcon, LocationOn, Work, GitHub, Twitter,
   CalendarToday as JoinedIcon, Star as ReputationIcon,
-  EmojiEvents as BadgeIcon, Group as FollowersIcon
+  EmojiEvents as BadgeIcon, Group as FollowersIcon,
+  Close as CloseIcon
 } from '@mui/icons-material'
 import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
@@ -37,6 +40,10 @@ export default function ProfilePage() {
   const [postsLoading, setPostsLoading] = useState(false)
   const [tab, setTab] = useState(0)
   const [following, setFollowing] = useState(false)
+  const [userListDialog, setUserListDialog] = useState<{ open: boolean, title: string, users: any[] }>({
+    open: false, title: '', users: []
+  })
+  const [listLoading, setListLoading] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -44,17 +51,46 @@ export default function ProfilePage() {
       .then(({ data }) => {
         setProfile(data.user)
         setFollowing(data.user.isFollowing)
-        loadPosts(data.user.id)
       })
+      .catch(() => toast.error('Lỗi khi tải thông tin cá nhân'))
       .finally(() => setLoading(false))
   }, [username])
 
-  const loadPosts = async (userId: number) => {
+  useEffect(() => {
+    if (profile?.id) {
+      loadPosts(profile.id, tab === 0 ? 'my' : 'saved')
+    }
+  }, [profile?.id, tab, currentUser?.id])
+
+  const loadPosts = async (userId: number, type: 'my' | 'saved') => {
     setPostsLoading(true)
     try {
-      const { data } = await api.get('/posts', { params: { authorId: userId, status: 'published', limit: 20 } })
+      const isOwn = currentUser?.id === userId
+      const params: any = { limit: 20 }
+      if (type === 'my') {
+        params.authorId = userId
+        params.status = isOwn ? 'all' : 'published'
+      } else {
+        params.bookmarked = 'true'
+      }
+      const { data } = await api.get('/posts', { params })
       setPosts(data.posts)
+    } catch (err) {
+      console.log("err", err)
+      toast.error('Lỗi tải bài viết')
     } finally { setPostsLoading(false) }
+  }
+
+  const loadUserList = async (type: 'followers' | 'following') => {
+    if (!profile) return
+    setListLoading(true)
+    setUserListDialog({ open: true, title: type === 'followers' ? 'Người theo dõi' : 'Đang theo dõi', users: [] })
+    try {
+      const { data } = await api.get(`/users/${profile.id}/${type}`)
+      setUserListDialog(prev => ({ ...prev, users: data.users }))
+    } catch (err) {
+      toast.error('Không thể tải danh sách')
+    } finally { setListLoading(false) }
   }
 
   const handleFollow = async () => {
@@ -163,8 +199,12 @@ export default function ProfilePage() {
         {/* Stats */}
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, py: 2, borderTop: '1px solid #e2e8f0' }}>
           <StatBox label="Bài viết" value={profile.postCount || 0} icon={null} />
-          <StatBox label="Người theo dõi" value={profile.followerCount || 0} icon={null} />
-          <StatBox label="Đang follow" value={profile.followingCount || 0} icon={null} />
+          <Box onClick={() => loadUserList('followers')} sx={{ cursor: 'pointer', '&:hover': { opacity: 0.7 } }}>
+            <StatBox label="Người theo dõi" value={profile.followerCount || 0} icon={null} />
+          </Box>
+          <Box onClick={() => loadUserList('following')} sx={{ cursor: 'pointer', '&:hover': { opacity: 0.7 } }}>
+            <StatBox label="Đang follow" value={profile.followingCount || 0} icon={null} />
+          </Box>
           <StatBox label="Điểm uy tín" value={profile.reputation || 0} icon={<ReputationIcon sx={{ fontSize: 12, color: '#f59e0b' }} />} />
         </Box>
 
@@ -185,9 +225,24 @@ export default function ProfilePage() {
         )}
       </Paper>
 
-      {/* Posts */}
+      {/* Posts Section */}
       <Box>
-        <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>Bài viết</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+          <Tabs value={tab} onChange={(_, v) => setTab(v)}>
+            <Tab label={isOwnProfile ? "Bài viết của tôi" : "Bài viết"} />
+            {isOwnProfile && <Tab label="Đã lưu" />}
+          </Tabs>
+          
+          {isOwnProfile && profile.totalPostCount !== undefined && (
+            <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+              <Tooltip title="Tổng số bài viết"><Chip size="small" label={`Tổng: ${profile.totalPostCount}`} variant="outlined" /></Tooltip>
+              <Tooltip title="Bài viết đã duyệt"><Chip size="small" label={`Đã duyệt: ${profile.postCount}`} color="success" variant="outlined" /></Tooltip>
+              <Tooltip title="Bài viết đang chờ duyệt"><Chip size="small" label={`Chờ duyệt: ${profile.pendingCount}`} color="warning" variant="outlined" /></Tooltip>
+              <Tooltip title="Bài viết bị từ chối"><Chip size="small" label={`Bị từ chối: ${profile.rejectedCount}`} color="error" variant="outlined" /></Tooltip>
+            </Stack>
+          )}
+        </Box>
+
         {postsLoading ? (
           <Box sx={{ textAlign: 'center', py: 4 }}><CircularProgress /></Box>
         ) : (
@@ -195,12 +250,47 @@ export default function ProfilePage() {
             {posts.map(post => <PostCard key={post.id} post={post} />)}
             {posts.length === 0 && (
               <Typography align="center" color="text.secondary" sx={{ py: 4 }}>
-                {isOwnProfile ? 'Bạn chưa có bài viết nào.' : 'Người dùng chưa có bài viết.'}
+                {tab === 0 
+                  ? (isOwnProfile ? 'Bạn chưa đăng bài viết nào.' : 'Người dùng chưa có bài viết.')
+                  : 'Bạn chưa lưu bài viết nào.'}
               </Typography>
             )}
           </Stack>
         )}
       </Box>
+
+      {/* User List Dialog */}
+      <Dialog open={userListDialog.open} onClose={() => setUserListDialog(p => ({ ...p, open: false }))} fullWidth maxWidth="xs">
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {userListDialog.title}
+          <IconButton size="small" onClick={() => setUserListDialog(p => ({ ...p, open: false }))}><CloseIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0 }}>
+          {listLoading ? (
+            <Box sx={{ textAlign: 'center', py: 3 }}><CircularProgress /></Box>
+          ) : (
+            <List>
+              {userListDialog.users.map(u => (
+                <ListItem 
+                  key={u.id} 
+                  component={Link} 
+                  to={`/profile/${u.username}`} 
+                  onClick={() => setUserListDialog(p => ({ ...p, open: false }))}
+                  sx={{ color: 'inherit', textDecoration: 'none', '&:hover': { bgcolor: '#f8fafc' } }}
+                >
+                  <ListItemAvatar>
+                    <Avatar src={u.avatar}>{u.username[0].toUpperCase()}</Avatar>
+                  </ListItemAvatar>
+                  <ListItemText primary={u.fullName || u.username} secondary={`⭐ ${u.reputation} điểm`} />
+                </ListItem>
+              ))}
+              {userListDialog.users.length === 0 && (
+                <Typography align="center" sx={{ py: 3, color: 'text.secondary' }}>Danh sách trống</Typography>
+              )}
+            </List>
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   )
 }

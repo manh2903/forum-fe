@@ -101,7 +101,7 @@ export default function Navbar() {
             </Box>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               <Box component="span" sx={{ fontWeight: 800, fontSize: '1.1rem', color: 'text.primary', letterSpacing: '-0.02em' }}>
-                Fita<Box component="span" sx={{ color: '#0c5d95' }}>Vnua</Box>
+                Fita<Box component="span" sx={{ color: '#0c5d95' }}> Vnua</Box>
               </Box>
             </Box>
           </Box>

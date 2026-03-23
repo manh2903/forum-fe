@@ -204,7 +204,7 @@ export default function LoginPage() {
                   <CodeIcon sx={{ color: 'white', fontSize: 34 }} />
                 </Box>
                 <Typography sx={{ fontWeight: 800, fontSize: '36px', color: '#1E1B4B', letterSpacing: '-0.04em' }}>
-                  FitaVnua
+                  Fita Vnua
                 </Typography>
               </Stack>
 
@@ -217,7 +217,7 @@ export default function LoginPage() {
                   lineHeight: 1.15, letterSpacing: '-0.03em'
                 }}
               >
-                Tiếp tục hành trình<br />tại <Box component="span" sx={{ color: '#6366F1' }}>FitaVnua</Box>
+                Tiếp tục hành trình<br />tại <Box component="span" sx={{ color: '#6366F1' }}>Fita Vnua</Box>
               </MotionTypography>
 
               <MotionTypography
@@ -318,7 +318,7 @@ export default function LoginPage() {
                   <CodeIcon sx={{ color: 'white', fontSize: 30 }} />
                 </Box>
                 <Typography sx={{ fontWeight: 800, fontSize: '26px', color: '#1E1B4B' }}>
-                  FitaVnua
+                  Fita Vnua
                 </Typography>
               </Box>
             )}

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
-  Box, Paper, Typography, TextField, Button, Chip, Select,
-  MenuItem, FormControl, CircularProgress, Alert,
-  Stack, Grid
+  Box, Paper, Typography, TextField, Button, Chip,
+  CircularProgress, Alert,
+  Stack, Grid, Autocomplete
 } from '@mui/material'
 import {
   Publish as PublishIcon, Save as SaveIcon, ArrowBack as BackIcon,
@@ -89,18 +89,39 @@ export default function CreatePostPage({ editMode = false }: Props) {
     try {
       const payload = { ...form, status }
       if (editMode && postId) {
-        await api.put(`/posts/${postId}`, payload)
-        toast.success('Đã cập nhật bài viết!')
+        const { data } = await api.put(`/posts/${postId}`, payload)
+        const actualStatus = data?.post?.status
+        
+        if (actualStatus === 'pending') {
+          toast.success('Bài viết đã được gửi và đang chờ duyệt!')
+        } else if (actualStatus === 'published') {
+          toast.success('Đã cập nhật bài viết!')
+        } else {
+          toast.success('Đã lưu nháp!')
+        }
       } else {
         const { data } = await api.post('/posts', payload)
-        toast.success(status === 'published' ? 'Đã đăng bài viết!' : 'Đã lưu nháp!')
-        if (status === 'published') navigate(`/posts/${data.post.slug}`)
-        else navigate('/')
+        const actualStatus = data?.post?.status
+
+        if (actualStatus === 'pending') {
+          toast.success('Bài viết đã được gửi và đang chờ duyệt!')
+        } else if (actualStatus === 'published') {
+          toast.success('Đã đăng bài viết!')
+        } else {
+          toast.success('Đã lưu nháp!')
+        }
+        
+        if ((actualStatus === 'published' || actualStatus === 'pending') && data?.post?.slug) {
+          navigate(`/posts/${data.post.slug}`)
+        } else {
+          navigate('/')
+        }
         return
       }
       navigate(-1)
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Có lỗi xảy ra')
+      console.error('Submit post error:', err)
+      setError(err.response?.data?.message || err.message || 'Có lỗi xảy ra')
     } finally {
       setLoading(false)
     }
@@ -170,19 +191,28 @@ export default function CreatePostPage({ editMode = false }: Props) {
             {/* Topic */}
             <Paper sx={{ p: 2.5, borderRadius: 3, border: '1px solid #e2e8f0' }}>
               <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5 }}>Chủ đề</Typography>
-              <FormControl fullWidth size="small">
-                <Select
-                  value={form.topicId}
-                  onChange={(e) => setForm({ ...form, topicId: e.target.value })}
-                  displayEmpty
-                  sx={{ bgcolor: '#f8fafc' }}
-                >
-                  <MenuItem value=""><em>Chọn chủ đề</em></MenuItem>
-                  {topics.map((t: any) => (
-                    <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                size="small"
+                options={topics}
+                getOptionLabel={(option: any) => option.name || ''}
+                value={topics.find((t: any) => t.id === form.topicId) || null}
+                onChange={(_, newValue: any) => {
+                  setForm({ ...form, topicId: newValue ? newValue.id : '' })
+                }}
+                renderInput={(params) => (
+                  <TextField 
+                    {...params} 
+                    placeholder="Chọn chủ đề" 
+                    variant="outlined"
+                    sx={{ 
+                      '& .MuiOutlinedInput-root': { bgcolor: '#f8fafc' }
+                    }}
+                  />
+                )}
+                ListboxProps={{
+                  sx: { maxHeight: 250, fontSize: '0.875rem' }
+                }}
+              />
             </Paper>
 
             {/* Tags */}
