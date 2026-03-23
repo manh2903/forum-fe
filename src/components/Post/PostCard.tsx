@@ -24,7 +24,7 @@ interface Post {
   status?: string;
 }
 
-export default function PostCard({ post }: { post: Post }) {
+export default function PostCard({ post, showStatus = false }: { post: Post, showStatus?: boolean }) {
   return (
     <Card sx={{
       position: 'relative',
@@ -65,7 +65,7 @@ export default function PostCard({ post }: { post: Post }) {
             <TimeIcon sx={{ fontSize: 13, color: 'text.secondary' }} />
             <Typography variant="body2" color="text.secondary">{dayjs(post.createdAt).fromNow()}</Typography>
           </Box>
-          {post.status && (
+          {showStatus && post.status && (
             <>
               <Typography variant="body2" color="text.secondary">·</Typography>
               <Chip

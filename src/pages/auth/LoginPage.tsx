@@ -152,7 +152,12 @@ export default function LoginPage() {
       toast.success('Chào mừng bạn quay trở lại!')
       navigate('/')
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Đăng nhập không thành công')
+      if (err.response?.status === 403 && err.response?.data?.email) {
+        toast.error(err.response.data.message)
+        navigate('/verify-email', { state: { email: err.response.data.email } })
+      } else {
+        setError(err.response?.data?.message || 'Đăng nhập không thành công')
+      }
     } finally {
       setLoading(false)
     }

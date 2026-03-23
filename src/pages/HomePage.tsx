@@ -377,10 +377,10 @@ export default function HomePage() {
                       >
                         {author.isFollowing ? (
                           <>
-                            <span className="following-text">Đã follow</span>
-                            <span className="unfollow-text">Bỏ follow</span>
+                            <span className="following-text">Đã theo dõi</span>
+                            <span className="unfollow-text">Bỏ theo dõi</span>
                           </>
-                        ) : 'Follow'}
+                        ) : 'Theo dõi'}
                       </Button>
                     )}
                   </Box>

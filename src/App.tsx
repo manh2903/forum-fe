@@ -7,6 +7,8 @@ import AdminLayout from './components/Layout/AdminLayout'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import VerifyEmailPage from './pages/auth/VerifyEmailPage'
 import AuthCallbackPage from './pages/auth/AuthCallbackPage'
 import PostDetailPage from './pages/PostDetailPage'
 import CreatePostPage from './pages/CreatePostPage'
@@ -52,6 +54,8 @@ export default function App() {
       {/* Auth routes */}
       <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
       <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
+      <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
+      <Route path="/verify-email" element={<GuestRoute><VerifyEmailPage /></GuestRoute>} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
       {/* Admin routes */}

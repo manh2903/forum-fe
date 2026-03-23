@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import {
   Box, Typography, Avatar, Button, Paper, Grid, Chip, Tabs,
   Tab, Stack, CircularProgress, Divider, LinearProgress, Tooltip,
-  Dialog, DialogTitle, DialogContent, List, ListItem, ListItemAvatar,
-  ListItemText, IconButton
+  Dialog, DialogTitle, DialogContent, List, ListItem, ListItemAvatar, ListItemText,
+  ListItemButton, IconButton
 } from '@mui/material'
 import {
   Link as LinkIcon, LocationOn, Work, GitHub, Twitter,
@@ -109,6 +109,23 @@ export default function ProfilePage() {
     }
   }
 
+  const handleFollowOther = async (u: any) => {
+    if (!currentUser) return toast.error('Đăng nhập để theo dõi')
+    try {
+      if (u.isFollowing) {
+        await api.delete(`/users/${u.id}/follow`)
+      } else {
+        await api.post(`/users/${u.id}/follow`)
+      }
+      setUserListDialog(prev => ({
+        ...prev,
+        users: prev.users.map(user => user.id === u.id ? { ...user, isFollowing: !u.isFollowing } : user)
+      }))
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Lỗi')
+    }
+  }
+
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>
   if (!profile) return <Typography align="center" sx={{ py: 8 }}>Người dùng không tồn tại</Typography>
 
@@ -203,7 +220,7 @@ export default function ProfilePage() {
             <StatBox label="Người theo dõi" value={profile.followerCount || 0} icon={null} />
           </Box>
           <Box onClick={() => loadUserList('following')} sx={{ cursor: 'pointer', '&:hover': { opacity: 0.7 } }}>
-            <StatBox label="Đang follow" value={profile.followingCount || 0} icon={null} />
+            <StatBox label="Đang theo dõi" value={profile.followingCount || 0} icon={null} />
           </Box>
           <StatBox label="Điểm uy tín" value={profile.reputation || 0} icon={<ReputationIcon sx={{ fontSize: 12, color: '#f59e0b' }} />} />
         </Box>
@@ -247,7 +264,7 @@ export default function ProfilePage() {
           <Box sx={{ textAlign: 'center', py: 4 }}><CircularProgress /></Box>
         ) : (
           <Stack spacing={2}>
-            {posts.map(post => <PostCard key={post.id} post={post} />)}
+            {posts.map(post => <PostCard key={post.id} post={post} showStatus={isOwnProfile && tab === 0} />)}
             {posts.length === 0 && (
               <Typography align="center" color="text.secondary" sx={{ py: 4 }}>
                 {tab === 0 
@@ -272,16 +289,36 @@ export default function ProfilePage() {
             <List>
               {userListDialog.users.map(u => (
                 <ListItem 
-                  key={u.id} 
-                  component={Link} 
-                  to={`/profile/${u.username}`} 
-                  onClick={() => setUserListDialog(p => ({ ...p, open: false }))}
-                  sx={{ color: 'inherit', textDecoration: 'none', '&:hover': { bgcolor: '#f8fafc' } }}
+                  key={u.id}
+                  disablePadding
+                  secondaryAction={
+                    currentUser && currentUser.id !== u.id && (
+                      <Button 
+                        size="small" 
+                        variant={u.isFollowing ? "outlined" : "contained"} 
+                        onClick={() => handleFollowOther(u)}
+                        sx={{ borderRadius: 2, fontSize: '0.7rem', py: 0.5 }}
+                      >
+                        {u.isFollowing ? 'Đang theo dõi' : 'Theo dõi'}
+                      </Button>
+                    )
+                  }
                 >
-                  <ListItemAvatar>
-                    <Avatar src={u.avatar}>{u.username[0].toUpperCase()}</Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary={u.fullName || u.username} secondary={`⭐ ${u.reputation} điểm`} />
+                  <ListItemButton 
+                    component={Link} 
+                    to={`/profile/${u.username}`}
+                    onClick={() => setUserListDialog(p => ({ ...p, open: false }))}
+                    sx={{ py: 1.5 }}
+                  >
+                    <ListItemAvatar>
+                      <Avatar src={u.avatar}>{u.username[0].toUpperCase()}</Avatar>
+                    </ListItemAvatar>
+                    <ListItemText 
+                      primary={u.fullName || u.username} 
+                      secondary={`⭐ ${u.reputation} điểm`} 
+                      primaryTypographyProps={{ fontWeight: 600, fontSize: '0.9rem' }}
+                    />
+                  </ListItemButton>
                 </ListItem>
               ))}
               {userListDialog.users.length === 0 && (

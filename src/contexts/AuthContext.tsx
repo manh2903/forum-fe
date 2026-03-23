@@ -31,9 +31,14 @@ interface AuthContextType {
   loading: boolean
   socket: Socket | null
   login: (account: string, password: string) => Promise<void>
-  register: (username: string, fullName: string, email: string, password: string, studentId?: string, className?: string) => Promise<void>
+  register: (username: string, fullName: string, email: string, password: string, studentId?: string, className?: string) => Promise<any>
   logout: () => void
   updateUser: (data: Partial<User>) => void
+  forgotPassword: (email: string) => Promise<void>
+  verifyOTP: (email: string, otp: string) => Promise<string>
+  resetPassword: (resetToken: string, newPassword: string) => Promise<void>
+  verifyEmail: (email: string, otp: string) => Promise<void>
+  resendOTP: (email: string) => Promise<void>
   unreadCount: number
   setUnreadCount: React.Dispatch<React.SetStateAction<number>>
 }
@@ -97,10 +102,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (username: string, fullName: string, email: string, password: string, studentId?: string, className?: string) => {
     const { data } = await api.post('/auth/register', { username, fullName, email, password, studentId, class: className })
+    if (data.accessToken) {
+      localStorage.setItem('accessToken', data.accessToken)
+      localStorage.setItem('refreshToken', data.refreshToken)
+      setUser(data.user)
+      initSocket(data.accessToken)
+    }
+    return data
+  }
+
+  const forgotPassword = async (email: string) => {
+    await api.post('/auth/forgot-password', { email })
+  }
+
+  const verifyOTP = async (email: string, otp: string) => {
+    const { data } = await api.post('/auth/verify-otp', { email, otp })
+    return data.resetToken
+  }
+
+  const resetPassword = async (resetToken: string, newPassword: string) => {
+    await api.post('/auth/reset-password', { resetToken, newPassword })
+  }
+
+  const verifyEmail = async (email: string, otp: string) => {
+    const { data } = await api.post('/auth/verify-email', { email, otp })
     localStorage.setItem('accessToken', data.accessToken)
     localStorage.setItem('refreshToken', data.refreshToken)
     setUser(data.user)
     initSocket(data.accessToken)
+  }
+
+  const resendOTP = async (email: string) => {
+    await api.post('/auth/resend-otp', { email })
   }
 
   const logout = () => {
@@ -117,7 +150,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, socket, login, register, logout, updateUser, unreadCount, setUnreadCount }}>
+    <AuthContext.Provider value={{ 
+      user, loading, socket, login, register, logout, updateUser, 
+      forgotPassword, verifyOTP, resetPassword, verifyEmail, resendOTP,
+      unreadCount, setUnreadCount 
+    }}>
       {children}
     </AuthContext.Provider>
   )

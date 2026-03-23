@@ -194,9 +194,14 @@ export default function RegisterPage() {
 
     setLoading(true)
     try {
-      await register(form.username, form.fullName, form.email, form.password, form.studentId, form.class)
-      toast.success('Chào mừng bạn đến với Fita Vnua!')
-      navigate('/')
+      const result = await register(form.username, form.fullName, form.email, form.password, form.studentId, form.class)
+      if (result.requireVerification) {
+        toast.success('Vui lòng kiểm tra email để lấy mã xác thực')
+        navigate('/verify-email', { state: { email: form.email } })
+      } else {
+        toast.success('Chào mừng bạn đến với Fita Vnua!')
+        navigate('/')
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Đăng ký không thành công')
     } finally {
