@@ -8,7 +8,8 @@ import {
   Dashboard as DashboardIcon, People as PeopleIcon, Article as ArticleIcon,
   Report as ReportIcon, Topic as TopicIcon, History as HistoryIcon,
   ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon,
-  Home as HomeIcon, ViewCompact as BannerIcon, Settings as SettingsIcon
+  Home as HomeIcon, ViewCompact as BannerIcon, Settings as SettingsIcon,
+  Notifications as NotifIcon
 } from '@mui/icons-material'
 import { useAuth } from '../../contexts/AuthContext'
 import { alpha } from '@mui/material/styles'
@@ -19,6 +20,7 @@ const DRAWER_COLLAPSED = 64
 
 const navItems = [
   { label: 'Dashboard', path: '/admin', icon: <DashboardIcon />, end: true },
+  { label: 'Thông báo', path: '/admin/notifications', icon: <NotifIcon /> },
   { label: 'Người dùng', path: '/admin/users', icon: <PeopleIcon /> },
   { label: 'Bài viết', path: '/admin/posts', icon: <ArticleIcon /> },
   { label: 'Báo cáo', path: '/admin/reports', icon: <ReportIcon /> },

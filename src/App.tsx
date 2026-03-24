@@ -32,6 +32,7 @@ import AdminTopics from './pages/admin/AdminTopics'
 import AdminAuditLog from './pages/admin/AdminAuditLog'
 import AdminBanners from './pages/admin/AdminBanners'
 import AdminSettings from './pages/admin/AdminSettings'
+import AdminNotifications from './pages/admin/AdminNotifications'
 
 function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: string[] }) {
   const { user, loading } = useAuth()
@@ -68,6 +69,7 @@ export default function App() {
         <Route path="banners" element={<AdminBanners />} />
         <Route path="audit-log" element={<AdminAuditLog />} />
         <Route path="settings" element={<AdminSettings />} />
+        <Route path="notifications" element={<AdminNotifications />} />
       </Route>
 
       {/* Main routes */}

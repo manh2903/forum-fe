@@ -4,7 +4,7 @@ import {
   CircularProgress, MenuItem, Avatar, alpha
 } from '@mui/material'
 import { Notifications as NotificationsIcon } from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../services/api'
 import dayjs from 'dayjs'
@@ -17,6 +17,8 @@ dayjs.locale('vi')
 export default function NotificationCenter() {
   const { unreadCount, setUnreadCount } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const isAdminArea = location.pathname.startsWith('/admin')
   const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null)
   const [notifications, setNotifications] = useState<any[]>([])
   const [loadingNotifs, setLoadingNotifs] = useState(false)
@@ -74,29 +76,68 @@ export default function NotificationCenter() {
         anchorEl={notifAnchorEl}
         open={Boolean(notifAnchorEl)}
         onClose={handleNotifClose}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        transformOrigin={{ horizontal: 'left', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+        sx={{ mt: 1.5 }}
         PaperProps={{
           sx: {
-            mt: 1, width: 360, maxHeight: 480,
-            borderRadius: 3, border: '1px solid #e2e8f0',
-            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-            '& .MuiList-root': { p: 0 }
+            width: 380,
+            maxHeight: 520,
+            borderRadius: 2,
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
           }
         }}
       >
-        <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0' }}>
-          <Typography variant="subtitle1" fontWeight={700}>Thông báo</Typography>
+        {/* Header - Fixed */}
+        <Box sx={{ 
+          p: '14px 20px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          borderBottom: '1px solid #f1f5f9',
+          bgcolor: '#ffffff',
+          position: 'sticky',
+          top: 0,
+          zIndex: 2
+        }}>
+          <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#1e293b' }}>
+            Thông báo
+          </Typography>
           {unreadCount > 0 && (
-            <Button size="small" onClick={markAllRead} sx={{ fontSize: '0.75rem' }}>Đọc tất cả</Button>
+            <Button 
+              size="small" 
+              onClick={markAllRead} 
+              sx={{ 
+                fontSize: '0.75rem', 
+                fontWeight: 600,
+                color: 'primary.main',
+                '&:hover': { bgcolor: alpha('#0c5d95', 0.05) }
+              }}
+            >
+              Đọc tất cả
+            </Button>
           )}
         </Box>
-        <Box sx={{ overflowY: 'auto', maxHeight: 380 }}>
+
+        {/* List - Scrollable */}
+        <Box sx={{ 
+          overflowY: 'auto', 
+          maxHeight: 400,
+          flex: 1,
+          '&::-webkit-scrollbar': { width: 6 },
+          '&::-webkit-scrollbar-thumb': { bgcolor: '#e2e8f0', borderRadius: 3 }
+        }}>
           {loadingNotifs ? (
             <Box sx={{ p: 4, textAlign: 'center' }}><CircularProgress size={24} /></Box>
           ) : notifications.length === 0 ? (
-            <Box sx={{ p: 4, textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">Không có thông báo mới nào</Typography>
+            <Box sx={{ p: 6, textAlign: 'center' }}>
+              <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                Không có thông báo mới nào
+              </Typography>
             </Box>
           ) : (
             notifications.map((notif: any) => (
@@ -110,21 +151,22 @@ export default function NotificationCenter() {
                   }
                 }}
                 sx={{
-                  px: 2, py: 1.5, gap: 1.5, alignItems: 'flex-start',
+                  px: 2.5, py: 2, gap: 1.5, alignItems: 'flex-start',
                   whiteSpace: 'normal',
-                  bgcolor: notif.isRead ? 'transparent' : alpha('#0c5d95', 0.05),
-                  borderBottom: '1px solid #f1f5f9',
+                  bgcolor: notif.isRead ? 'transparent' : alpha('#0c5d95', 0.04),
+                  borderBottom: '1px solid #f8fafc',
+                  transition: 'all 0.2s',
                   '&:hover': { bgcolor: alpha('#0c5d95', 0.08) }
                 }}
               >
-                <Avatar src={notif.sender?.avatar} sx={{ width: 40, height: 40, flexShrink: 0 }}>
+                <Avatar src={notif.sender?.avatar} sx={{ width: 44, height: 44, flexShrink: 0, border: '1px solid #f1f5f9' }}>
                   {notif.sender?.username?.[0]?.toUpperCase()}
                 </Avatar>
                 <Box sx={{ flex: 1 }}>
-                  <Typography variant="body2" color="text.primary" sx={{ mb: 0.25, fontWeight: notif.isRead ? 400 : 600 }}>
+                  <Typography variant="body2" color="text.primary" sx={{ mb: 0.5, fontWeight: notif.isRead ? 400 : 700, lineHeight: 1.4 }}>
                     {notif.content}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                     {dayjs(notif.createdAt).fromNow()}
                   </Typography>
                 </Box>
@@ -132,8 +174,29 @@ export default function NotificationCenter() {
             ))
           )}
         </Box>
-        <Box sx={{ p: 1, textAlign: 'center', borderTop: '1px solid #e2e8f0' }}>
-          <Button fullWidth onClick={() => { navigate('/notifications'); handleNotifClose() }} size="small" sx={{ color: 'text.secondary' }}>
+
+        {/* Footer - Fixed */}
+        <Box sx={{ 
+          p: 1.5, 
+          textAlign: 'center', 
+          borderTop: '1px solid #f1f5f9',
+          bgcolor: '#ffffff',
+          position: 'sticky',
+          bottom: 0,
+          zIndex: 2
+        }}>
+          <Button 
+            fullWidth 
+            onClick={() => { navigate(isAdminArea ? '/admin/notifications' : '/notifications'); handleNotifClose() }} 
+            size="small" 
+            sx={{ 
+              color: '#64748b', 
+              fontWeight: 600,
+              fontSize: '0.8125rem',
+              py: 0.75,
+              '&:hover': { bgcolor: '#f8fafc', color: 'text.primary' }
+            }}
+          >
             Xem tất cả
           </Button>
         </Box>
