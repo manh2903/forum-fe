@@ -12,6 +12,7 @@ import {
 } from '@mui/icons-material'
 import { useAuth } from '../../contexts/AuthContext'
 import { alpha } from '@mui/material/styles'
+import NotificationCenter from './NotificationCenter'
 
 const DRAWER_WIDTH = 240
 const DRAWER_COLLAPSED = 64
@@ -153,8 +154,31 @@ export default function AdminLayout() {
       </Drawer>
 
       {/* Main content */}
-      <Box component="main" sx={{ flex: 1, p: 3, overflow: 'auto' }}>
-        <Outlet />
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+        {/* Top Header */}
+        <Box sx={{
+          height: 64,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          px: 3,
+          bgcolor: '#ffffff',
+          borderBottom: '1px solid #e2e8f0',
+          gap: 2
+        }}>
+          <NotificationCenter />
+          <Divider orientation="vertical" flexItem sx={{ my: 2 }} />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Avatar src={user?.avatar} sx={{ width: 32, height: 32 }}>
+              {user?.username?.[0]?.toUpperCase()}
+            </Avatar>
+            <Typography variant="body2" fontWeight={600}>{user?.username}</Typography>
+          </Box>
+        </Box>
+
+        <Box component="main" sx={{ flex: 1, p: 3, overflow: 'auto' }}>
+          <Outlet />
+        </Box>
       </Box>
     </Box>
   )

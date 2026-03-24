@@ -40,6 +40,17 @@ export default function AdminUsers() {
     loadUsers()
   }, [authLoading, page, debouncedSearch, role, status])
 
+  const { socket } = useAuth()
+  useEffect(() => {
+    if (!socket) return
+    const handleNewUser = () => {
+      loadUsers()
+      toast.success('Có người dùng mới đăng ký!', { icon: '👥' })
+    }
+    socket.on('new_user', handleNewUser)
+    return () => { socket.off('new_user', handleNewUser) }
+  }, [socket])
+
   const loadUsers = async () => {
     setLoading(true)
     try {

@@ -39,6 +39,17 @@ export default function AdminReports() {
     loadReports()
   }, [authLoading, statusFilter, page])
 
+  const { socket } = useAuth()
+  useEffect(() => {
+    if (!socket) return
+    const handleNewReport = () => {
+      loadReports()
+      toast.success('Có báo cáo mới cần xử lý!', { icon: '🚩' })
+    }
+    socket.on('new_report', handleNewReport)
+    return () => { socket.off('new_report', handleNewReport) }
+  }, [socket])
+
   const loadReports = async () => {
     setLoading(true)
     try {

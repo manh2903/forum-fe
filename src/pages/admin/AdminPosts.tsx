@@ -44,6 +44,17 @@ export default function AdminPosts() {
     loadPosts()
   }, [authLoading, page, debouncedSearch, topic, status])
 
+  const { socket } = useAuth()
+  useEffect(() => {
+    if (!socket) return
+    const handleNewPost = () => {
+      loadPosts()
+      toast.success('Có bài viết mới cần duyệt!', { icon: '📝' })
+    }
+    socket.on('new_pending_post', handleNewPost)
+    return () => { socket.off('new_pending_post', handleNewPost) }
+  }, [socket])
+
   const loadTopics = async () => {
     const { data } = await api.get('/topics')
     setTopics(data.topics)

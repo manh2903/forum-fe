@@ -84,8 +84,23 @@ export default function AdminDashboard() {
     }
 
     socket.on('presence_update', handlePresence)
+
+    const handleRefresh = () => {
+      api.get('/admin/analytics').then(({ data }) => setAnalytics(data))
+    }
+    socket.on('new_pending_post', handleRefresh)
+    socket.on('new_report', handleRefresh)
+    socket.on('new_user', handleRefresh)
+    socket.on('user_online', handleRefresh)
+    socket.on('user_offline', handleRefresh)
+
     return () => {
       socket.off('presence_update', handlePresence)
+      socket.off('new_pending_post', handleRefresh)
+      socket.off('new_report', handleRefresh)
+      socket.off('new_user', handleRefresh)
+      socket.off('user_online', handleRefresh)
+      socket.off('user_offline', handleRefresh)
     }
   }, [socket])
 
