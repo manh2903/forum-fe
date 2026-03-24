@@ -21,7 +21,8 @@ import dayjs from 'dayjs'
 const ACTION_LABELS: Record<string, string> = {
   ban_user: '🚫 Ban user', unban_user: '✅ Unban user', change_role: '🔄 Đổi role',
   resolve_report: '📋 Xử lý báo cáo', delete_post: '🗑 Xóa bài', feature_post: '⭐ Nổi bật',
-  update_post_admin: '📝 Sửa bài viết (Admin)', update_user_info: '👤 Cập nhật User (Admin)'
+  update_post_admin: '📝 Sửa bài viết (Admin)', update_user_info: '👤 Cập nhật User (Admin)',
+  'User Login': '🔑 Đăng nhập', 'User Logout': '🚪 Đăng xuất', 'User Registration': '👤 Đăng ký mới'
 }
 
 const StatCard = ({ title, value, icon, color, trend }: any) => (

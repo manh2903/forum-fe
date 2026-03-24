@@ -8,7 +8,7 @@ import {
 import { 
   Search as SearchIcon, Block as BanIcon, CheckCircle as UnbanIcon, 
   AdminPanelSettings as RoleIcon, Edit as EditIcon,
-  Campaign as NotifIcon
+  Campaign as NotifIcon, History as HistoryIcon
 } from '@mui/icons-material'
 import SendNotificationDialog from '../../components/Admin/SendNotificationDialog'
 import { useAuth } from '../../contexts/AuthContext'
@@ -33,6 +33,7 @@ export default function AdminUsers() {
   const [status, setStatus] = useState('')
   const [editUser, setEditUser] = useState<any>(null)
   const [notifUser, setNotifUser] = useState<any>(null)
+  const [historyUser, setHistoryUser] = useState<any>(null)
   const debouncedSearch = useDebounce(search, 500)
 
   useEffect(() => {
@@ -194,6 +195,11 @@ export default function AdminUsers() {
                 <TableCell><Typography variant="caption" color="text.secondary">{dayjs(user.createdAt).format('DD/MM/YY')}</Typography></TableCell>
                 <TableCell align="right">
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                    <Tooltip title="Lịch sử hoạt động">
+                      <IconButton size="small" onClick={() => setHistoryUser(user)} color="secondary">
+                        <HistoryIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title="Gửi thông báo">
                       <IconButton size="small" onClick={() => setNotifUser(user)} color="info">
                         <NotifIcon fontSize="small" />
@@ -310,6 +316,101 @@ export default function AdminUsers() {
         onClose={() => setNotifUser(null)}
         recipient={notifUser}
       />
+
+      <UserHistoryDialog 
+        open={!!historyUser}
+        onClose={() => setHistoryUser(null)}
+        user={historyUser}
+      />
     </Box>
+  )
+}
+
+function UserHistoryDialog({ open, onClose, user }: any) {
+  const [logs, setLogs] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  
+  useEffect(() => {
+    if (open && user?.id) loadLogs()
+  }, [open, user])
+
+  const loadLogs = async () => {
+    setLoading(true)
+    try {
+      const { data } = await api.get('/admin/audit-logs', { params: { userId: user.id, limit: 100 } })
+      setLogs(data.logs)
+    } finally { setLoading(false) }
+  }
+
+  const ACTION_LABELS: Record<string, string> = {
+    'User Login': '🔑 Đăng nhập', 'User Logout': '🚪 Đăng xuất', 'User Registration': '👤 Đăng ký mới',
+    'ban_user': '🚫 Khóa tài khoản', 'unban_user': '✅ Mở khóa tài khoản', 'change_role': '🔄 Đổi quyền',
+    'update_user_info': '👤 Sửa thông tin', 'create_post': '📝 Đăng bài', 'create_comment': '💬 Bình luận'
+  }
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <HistoryIcon color="primary" /> 
+        Lịch sử hoạt động: {user?.fullName || user?.username}
+      </DialogTitle>
+      <DialogContent dividers>
+        {loading ? (
+          <Box sx={{ py: 4, textAlign: 'center' }}><CircularProgress /></Box>
+        ) : logs.length === 0 ? (
+          <Typography color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+            Không tìm thấy lịch sử hoạt động cho người dùng này
+          </Typography>
+        ) : (
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow sx={{ bgcolor: '#f1f5f9' }}>
+                  <TableCell sx={{ fontWeight: 700 }}>Hành động</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Dữ liệu</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Thời gian</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Trạng thái</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {logs.map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell sx={{ maxWidth: 200 }}>
+                      <Typography variant="body2" fontWeight={600} noWrap>
+                        {ACTION_LABELS[log.action] || log.action}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace', display: 'block' }}>
+                        {log.endpoint}
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 250 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ 
+                        fontFamily: 'monospace', fontSize: '0.65rem', 
+                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', 
+                        overflow: 'hidden', wordBreak: 'break-all' 
+                      }}>
+                        {log.error ? `Error: ${log.error}` : log.requestBody || '-'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="caption">
+                        {dayjs(log.createdAt).format('DD/MM/YYYY HH:mm:ss')}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip label={log.status} size="small" color={log.status < 400 ? 'success' : 'error'} 
+                        sx={{ height: 18, fontSize: '0.6rem', fontWeight: 800 }} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Đóng</Button>
+      </DialogActions>
+    </Dialog>
   )
 }
