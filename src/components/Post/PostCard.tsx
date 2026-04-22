@@ -22,6 +22,7 @@ interface Post {
   viewCount: number; bookmarkCount: number; readTime: number; isPinned: boolean
   isFeatured: boolean; createdAt: string; isLiked?: boolean; isBookmarked?: boolean
   status?: string;
+  rejectionReason?: string;
 }
 
 export default function PostCard({ post, showStatus = false }: { post: Post, showStatus?: boolean }) {
@@ -184,6 +185,26 @@ export default function PostCard({ post, showStatus = false }: { post: Post, sho
                     }}
                   />
                 ))}
+              </Box>
+            )}
+            {/* Rejection Reason */}
+            {post.status === 'rejected' && post.rejectionReason && (
+              <Box 
+                sx={{ 
+                  mt: 1.5, mb: 1.5, p: 1.5, 
+                  bgcolor: alpha('#ef4444', 0.05), 
+                  borderRadius: 1.5, 
+                  border: '1px dashed #ef4444',
+                  position: 'relative'
+                }}
+                onClick={handleSubClick}
+              >
+                <Typography variant="caption" color="error.main" fontWeight={800} display="block" sx={{ mb: 0.5 }}>
+                  Lý do từ chối:
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic', fontSize: '0.8125rem' }}>
+                  "{post.rejectionReason}"
+                </Typography>
               </Box>
             )}
           </Box>

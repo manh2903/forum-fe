@@ -23,6 +23,9 @@ import {
   ListItemText,
   ListItemButton,
   IconButton,
+  Pagination,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import {
@@ -37,6 +40,9 @@ import {
   Group as FollowersIcon,
   Close as CloseIcon,
   Flag as ReportIcon,
+  CheckCircle as ApprovedIcon,
+  Timer as PendingIcon,
+  Cancel as RejectedIcon,
 } from "@mui/icons-material";
 import ReportDialog from "../components/Report/ReportDialog";
 import { useParams } from "react-router-dom";
@@ -83,6 +89,9 @@ export default function ProfilePage() {
   const [reports, setReports] = useState<any[]>([]);
   const [reportsLoading, setReportsLoading] = useState(false);
   const [following, setFollowing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("all");
   const [userListDialog, setUserListDialog] = useState<{ open: boolean; title: string; users: any[] }>({
     open: false,
     title: "",
@@ -105,24 +114,38 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (profile?.id) {
-      if (tab === 2) loadReports();
-      else loadPosts(profile.id, tab === 0 ? "my" : "saved");
+      if (tab === 2) loadReports(page);
+      else loadPosts(profile.id, tab === 0 ? "my" : "saved", page, statusFilter);
     }
-  }, [profile?.id, tab, currentUser?.id]);
+  }, [profile?.id, tab, currentUser?.id, page, statusFilter]);
 
-  const loadPosts = async (userId: number, type: "my" | "saved") => {
+  useEffect(() => {
+    setPage(1);
+  }, [tab]);
+
+  const loadPosts = async (userId: number, type: "my" | "saved", pageNum = 1, status = "all") => {
     setPostsLoading(true);
     try {
       const isOwn = currentUser?.id === userId;
-      const params: any = { limit: 20 };
+      const params: any = { 
+        limit: 5,
+        page: pageNum 
+      };
+      
       if (type === "my") {
         params.authorId = userId;
-        params.status = isOwn ? "all" : "published";
+        if (status !== "all") {
+          params.status = status;
+        } else {
+          params.status = isOwn ? "all" : "published";
+        }
       } else {
         params.bookmarked = "true";
       }
+      
       const { data } = await api.get("/posts", { params });
       setPosts(data.posts);
+      setTotalPages(data.totalPages || 1);
     } catch (err) {
       console.log("err", err);
       toast.error("Lỗi tải bài viết");
@@ -131,11 +154,12 @@ export default function ProfilePage() {
     }
   };
 
-  const loadReports = async () => {
+  const loadReports = async (pageNum = 1) => {
     setReportsLoading(true);
     try {
-      const { data } = await api.get("/reports");
+      const { data } = await api.get("/reports", { params: { page: pageNum, limit: 10 } });
       setReports(data.reports);
+      setTotalPages(data.totalPages || 1);
     } catch {
       toast.error("Lỗi tải báo cáo");
     } finally {
@@ -387,19 +411,53 @@ export default function ProfilePage() {
             {isOwnProfile && <Tab label="Báo cáo của tôi" />}
           </Tabs>
 
-          {isOwnProfile && profile.totalPostCount !== undefined && (
+          {isOwnProfile && tab === 0 && (
+            <ToggleButtonGroup
+              size="small"
+              value={statusFilter}
+              exclusive
+              onChange={(_, v) => { if (v !== null) { setStatusFilter(v); setPage(1); } }}
+              sx={{ 
+                bgcolor: '#f1f5f9', 
+                border: 'none',
+                '& .MuiToggleButton-root': {
+                  border: 'none',
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: 2,
+                  m: 0.5,
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  color: 'text.secondary',
+                  '&.Mui-selected': {
+                    bgcolor: '#ffffff',
+                    color: 'primary.main',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    '&:hover': { bgcolor: '#ffffff' }
+                  }
+                }
+              }}
+            >
+              <ToggleButton value="all">Tất cả</ToggleButton>
+              <ToggleButton value="published">Đã duyệt</ToggleButton>
+              <ToggleButton value="pending">Đang chờ</ToggleButton>
+              <ToggleButton value="rejected">Từ chối</ToggleButton>
+            </ToggleButtonGroup>
+          )}
+
+          {isOwnProfile && profile.totalPostCount !== undefined && tab === 0 && (
             <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-              <Tooltip title="Tổng số bài viết">
-                <Chip size="small" label={`Tổng: ${profile.totalPostCount}`} variant="outlined" />
+              <Tooltip title={`Tổng số: ${profile.totalPostCount}`}>
+                <Chip icon={<Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'text.secondary' }} />} size="small" label={profile.totalPostCount} variant="outlined" />
               </Tooltip>
-              <Tooltip title="Bài viết đã duyệt">
-                <Chip size="small" label={`Đã duyệt: ${profile.postCount}`} color="success" variant="outlined" />
+              <Tooltip title={`Đã duyệt: ${profile.postCount}`}>
+                <Chip icon={<ApprovedIcon sx={{ fontSize: '14px !important' }} />} size="small" label={profile.postCount} color="success" variant="outlined" />
               </Tooltip>
-              <Tooltip title="Bài viết đang chờ duyệt">
-                <Chip size="small" label={`Chờ duyệt: ${profile.pendingCount}`} color="warning" variant="outlined" />
+              <Tooltip title={`Đang chờ: ${profile.pendingCount}`}>
+                <Chip icon={<PendingIcon sx={{ fontSize: '14px !important' }} />} size="small" label={profile.pendingCount} color="warning" variant="outlined" />
               </Tooltip>
-              <Tooltip title="Bài viết bị từ chối">
-                <Chip size="small" label={`Bị từ chối: ${profile.rejectedCount}`} color="error" variant="outlined" />
+              <Tooltip title={`Từ chối: ${profile.rejectedCount}`}>
+                <Chip icon={<RejectedIcon sx={{ fontSize: '14px !important' }} />} size="small" label={profile.rejectedCount} color="error" variant="outlined" />
               </Tooltip>
             </Stack>
           )}
@@ -480,6 +538,17 @@ export default function ProfilePage() {
                   Bạn chưa có báo cáo nào.
                 </Typography>
               )}
+              {tab === 2 && totalPages > 1 && (
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                  <Pagination 
+                    count={totalPages} 
+                    page={page} 
+                    onChange={(_, p) => setPage(p)} 
+                    color="primary" 
+                    shape="rounded"
+                  />
+                </Box>
+              )}
             </Stack>
           )
         ) : postsLoading ? (
@@ -493,8 +562,19 @@ export default function ProfilePage() {
             ))}
             {posts.length === 0 && (
               <Typography align="center" color="text.secondary" sx={{ py: 4 }}>
-                {tab === 0 ? (isOwnProfile ? "Bạn chưa đăng bài viết nào." : "Người dùng chưa có bài viết.") : "Bạn chưa lưu bài viết nào."}
+                {tab === 0 ? (isOwnProfile ? "Không tìm thấy bài viết nào với bộ lọc hiện tại." : "Người dùng chưa có bài viết.") : "Bạn chưa lưu bài viết nào."}
               </Typography>
+            )}
+            {totalPages > 1 && (
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                <Pagination 
+                  count={totalPages} 
+                  page={page} 
+                  onChange={(_, p) => setPage(p)} 
+                  color="primary" 
+                  shape="rounded"
+                />
+              </Box>
             )}
           </Stack>
         )}
