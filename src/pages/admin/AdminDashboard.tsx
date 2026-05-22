@@ -121,7 +121,7 @@ export default function AdminDashboard() {
     topPosts = [],
     topTags = [],
     topSearches = [],
-    charts = { userGrowth: [], postGrowth: [] }
+    charts = { userGrowth: [], postGrowth: [], reportGrowth: [], resolvedGrowth: [] }
   } = analytics || {};
 
   const chartData = (() => {
@@ -132,6 +132,52 @@ export default function AdminDashboard() {
       map.set(d.date, { ...existing, posts: parseInt(d.count) })
     })
     return Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date))
+  })()
+
+  const reportChartData = (() => {
+    const map = new Map()
+    const reportGrowth = charts.reportGrowth || []
+    const resolvedGrowth = charts.resolvedGrowth || []
+    
+    // Khởi tạo trước dữ liệu của 30 ngày gần đây với giá trị bằng 0 để biểu đồ hiển thị mượt mà không đứt gãy
+    for (let i = 29; i >= 0; i--) {
+      const dStr = dayjs().subtract(i, 'day').format('YYYY-MM-DD')
+      map.set(dStr, { 
+        date: dayjs(dStr).format('DD/MM'), 
+        reports: 0, 
+        resolved: 0 
+      })
+    }
+
+    reportGrowth.forEach((d: any) => {
+      const formattedDate = dayjs(d.date).format('YYYY-MM-DD')
+      const existing = map.get(formattedDate)
+      if (existing) {
+        existing.reports = parseInt(d.count)
+      } else {
+        map.set(formattedDate, { 
+          date: dayjs(d.date).format('DD/MM'), 
+          reports: parseInt(d.count), 
+          resolved: 0 
+        })
+      }
+    })
+
+    resolvedGrowth.forEach((d: any) => {
+      const formattedDate = dayjs(d.date).format('YYYY-MM-DD')
+      const existing = map.get(formattedDate)
+      if (existing) {
+        existing.resolved = parseInt(d.count)
+      } else {
+        map.set(formattedDate, { 
+          date: dayjs(d.date).format('DD/MM'), 
+          reports: 0, 
+          resolved: parseInt(d.count) 
+        })
+      }
+    })
+
+    return Array.from(map.values())
   })()
 
   return (
@@ -251,12 +297,70 @@ export default function AdminDashboard() {
         </Grid>
 
         {/* Engagement Widget */}
-        <Grid size={{ xs: 12, lg: 7 }}>
+        <Grid size={{ xs: 12, lg: 12 }}>
           <EngagementWidget data={engagementByTopic} loading={loading} />
         </Grid>
 
+        {/* Violation Reports Chart */}
+        <Grid size={{ xs: 12, lg: 12 }}>
+          <Paper sx={{ p: 3, borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none' }}>
+            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6" fontWeight={800} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <ReportIcon sx={{ color: '#ef4444' }} /> Xu hướng Báo cáo Vi phạm
+              </Typography>
+              <Stack direction="row" spacing={2}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#ef4444' }} />
+                  <Typography variant="caption" fontWeight={600}>Báo cáo nhận được</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#f97316' }} />
+                  <Typography variant="caption" fontWeight={600}>Đã xử lý</Typography>
+                </Box>
+              </Stack>
+            </Box>
+            <Box sx={{ height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={reportChartData}>
+                  <defs>
+                    <linearGradient id="reportGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="resolvedGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                  <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }} />
+                  <Area type="monotone" dataKey="reports" name="Báo cáo nhận được" stroke="#ef4444" fill="url(#reportGrad)" strokeWidth={3} />
+                  <Area type="monotone" dataKey="resolved" name="Đã xử lý" stroke="#f97316" fill="url(#resolvedGrad)" strokeWidth={3} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* Top Tags */}
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <Paper sx={{ p: 3, borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', height: '100%' }}>
+            <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>#️⃣ Chủ đề Phổ biến</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {topTags.map((tag: any) => (
+                <Chip key={tag.id} label={tag.name} size="small" variant="outlined" 
+                  sx={{ borderRadius: 1.5, borderColor: '#eef2f6', bgcolor: '#f8fafc', fontWeight: 600 }}
+                  avatar={<Avatar sx={{ bgcolor: alpha('#6366f1', 0.1), color: '#6366f1', fontSize: '0.6rem !important' }}>{tag.postCount}</Avatar>} />
+              ))}
+            </Box>
+          </Paper>
+        </Grid>
+
+
         {/* Search Trends */}
-        <Grid size={{ xs: 12, lg: 5 }}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <Paper sx={{ p: 3, borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', height: '100%' }}>
             <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="h6" fontWeight={800} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -288,7 +392,7 @@ export default function AdminDashboard() {
         </Grid>
 
         {/* Top Content */}
-        <Grid size={{ xs: 12, lg: 8 }}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <Paper sx={{ p: 3, borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none' }}>
             <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="h6" fontWeight={800}>🔥 Bài viết Thịnh hành</Typography>
@@ -314,20 +418,6 @@ export default function AdminDashboard() {
                 </Box>
               ))}
             </Stack>
-          </Paper>
-        </Grid>
-
-        {/* Top Tags */}
-        <Grid size={{ xs: 12, lg: 4 }}>
-          <Paper sx={{ p: 3, borderRadius: 1, border: '2px solid #cbd5e1', boxShadow: 'none', height: '100%' }}>
-            <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>#️⃣ Chủ đề Phổ biến</Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {topTags.map((tag: any) => (
-                <Chip key={tag.id} label={tag.name} size="small" variant="outlined" 
-                  sx={{ borderRadius: 1.5, borderColor: '#eef2f6', bgcolor: '#f8fafc', fontWeight: 600 }}
-                  avatar={<Avatar sx={{ bgcolor: alpha('#6366f1', 0.1), color: '#6366f1', fontSize: '0.6rem !important' }}>{tag.postCount}</Avatar>} />
-              ))}
-            </Box>
           </Paper>
         </Grid>
       </Grid>

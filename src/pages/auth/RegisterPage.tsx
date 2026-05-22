@@ -191,6 +191,7 @@ export default function RegisterPage() {
     if (form.password !== form.confirmPassword) return setError('Mật khẩu không khớp')
     if (form.password.length < 8) return setError('Mật khẩu phải ít nhất 8 ký tự')
     if (form.username.length < 3) return setError('Username phải ít nhất 3 ký tự')
+    if (!form.studentId.trim()) return setError('Mã sinh viên là bắt buộc')
 
     setLoading(true)
     try {
@@ -480,7 +481,7 @@ export default function RegisterPage() {
 
               <Stack direction="row" spacing={1.75}>
                 <TextField
-                  className="rg-field" label="Mã sinh viên" fullWidth
+                  className="rg-field" label="Mã sinh viên" required fullWidth
                   value={form.studentId} onChange={set('studentId')}
                   placeholder="651234…"
                   InputProps={{ startAdornment: <InputAdornment position="start"><BadgeIcon sx={{ fontSize: 20 }} /></InputAdornment> }}
